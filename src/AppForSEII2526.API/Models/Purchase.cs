@@ -48,5 +48,6 @@ namespace AppForSEII2526.API.Models
         public int TotalQuantity { get; set; }
 
         public virtual IList<PurchaseItem> PurchaseItems { get; set; }
+        public string CustomerId { get; internal set; }
     }
 }
