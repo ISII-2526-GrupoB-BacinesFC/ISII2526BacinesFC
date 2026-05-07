@@ -30,5 +30,6 @@ namespace AppForSEII2526.API.Models
         public int PurchaseId { get; set; }
         [ForeignKey("PurchaseId")]
         public virtual Purchase Purchase { get; set; }
+        public double PriceAtPurchase { get; internal set; }
     }
 }
