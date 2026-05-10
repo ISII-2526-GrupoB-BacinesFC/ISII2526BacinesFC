@@ -26,6 +26,7 @@ namespace AppForSEII2526.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Purchase>>> GetPurchases()
         {
+            // Cargamos las líneas de compra para que no salgan nulas
             return await _context.Purchases
                 .Include(p => p.PurchaseItems)
                 .ToListAsync();
@@ -35,6 +36,7 @@ namespace AppForSEII2526.API.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Purchase>> GetPurchase(int id)
         {
+            // Cargamos la compra con sus líneas y los datos del dispositivo
             var purchase = await _context.Purchases
                 .Include(p => p.PurchaseItems)
                     .ThenInclude(pi => pi.Device)
@@ -52,52 +54,54 @@ namespace AppForSEII2526.API.Controllers
         [HttpPost]
         public async Task<ActionResult<Purchase>> PostPurchase(PurchaseCreateDTO purchaseDto)
         {
-            // 1. Validación de entrada
+            // 1. Validación de seguridad
             if (purchaseDto == null || purchaseDto.Items == null || !purchaseDto.Items.Any())
             {
-                return BadRequest("La compra no contiene artículos.");
+                return BadRequest("La compra no tiene artículos o el formato es incorrecto.");
             }
 
-            // 2. Mapeo del DTO a la Entidad Purchase
+            // 2. Mapeo inicial (DTO -> Entidad)
             var purchase = new Purchase
             {
                 CustomerUserName = purchaseDto.CustomerUserName,
                 CustomerUserSurname = purchaseDto.CustomerUserSurname,
                 DeliveryAddress = purchaseDto.DeliveryAddress,
-
-                // Intentamos convertir el string a Enum. Si falla, avisamos al usuario.
-                PaymentMethod = Enum.TryParse<PaymentMethod>(purchaseDto.PaymentMethod, out var method)
-                                ? method : PaymentMethod.CreditCard,
-
                 PurchaseDate = DateTime.Now,
                 PurchaseItems = new List<PurchaseItem>(),
                 TotalPrice = 0,
                 TotalQuantity = 0,
-                CustomerId = "Invitado"
+                CustomerId = "Invitado" // O el ID que gestiones internamente
             };
 
-            // 3. Procesar cada artículo del DTO
+            // Intentar convertir el texto del método de pago al Enum del modelo
+            if (Enum.TryParse<PaymentMethod>(purchaseDto.PaymentMethod, out var method))
+            {
+                purchase.PaymentMethod = method;
+            }
+
+            // 3. Procesar cada artículo y calcular precios/cantidades
             foreach (var itemDto in purchaseDto.Items)
             {
+                // Buscamos el dispositivo para tener el precio real de la DB
                 var device = await _context.Devices.FindAsync(itemDto.DeviceId);
 
                 if (device == null)
                 {
-                    return BadRequest($"El dispositivo con ID {itemDto.DeviceId} no existe.");
+                    return BadRequest($"El dispositivo con ID {itemDto.DeviceId} no existe en la base de datos.");
                 }
 
+                // Creamos la línea de detalle (PurchaseItem)
                 var purchaseItem = new PurchaseItem
                 {
                     DeviceId = itemDto.DeviceId,
                     Quantity = itemDto.Quantity,
                     PriceAtPurchase = device.priceForPurchase,
-                    // CORRECCIÓN ERROR 500: Rellenamos la columna Description que es obligatoria en tu DB
-                    Description = $"Dispositivo: {device.Brand} {device.Name}"
+                    // IMPORTANTE: Rellenamos la descripción para evitar error 500 en DB
+                    Description = $"Compra de {device.Brand} {device.Name}"
                 };
 
+                // Añadimos a la lista y actualizamos totales
                 purchase.PurchaseItems.Add(purchaseItem);
-
-                // Actualizamos los totales
                 purchase.TotalPrice += (device.priceForPurchase * itemDto.Quantity);
                 purchase.TotalQuantity += itemDto.Quantity;
             }
@@ -110,10 +114,11 @@ namespace AppForSEII2526.API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Error interno al guardar: {ex.Message}");
+                // Si algo falla en la DB, devolvemos un error detallado
+                return StatusCode(500, $"Error al guardar la compra: {ex.InnerException?.Message ?? ex.Message}");
             }
 
-            // 5. Respuesta 201 Created
+            // 5. Respuesta 201 Created según el estándar
             return CreatedAtAction("GetPurchase", new { id = purchase.Id }, purchase);
         }
 
