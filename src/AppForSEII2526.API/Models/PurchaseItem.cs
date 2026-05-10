@@ -1,35 +1,35 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace AppForSEII2526.API.Models
+﻿namespace AppForSEII2526.API.Models
 {
+    [PrimaryKey(nameof(DeviceId), nameof(PurchaseId))]
     public class PurchaseItem
     {
-        [Key]
-        public int Id { get; set; }
+        public PurchaseItem() { }
 
-        [StringLength(200)]
-        [Display(Name = "Descripción (Opcional)")]
-        public string Description { get; set; }
+        // CAMBIO: deviceId ahora es int
+        public PurchaseItem(int deviceId, int purchaseId, decimal price, int quantity)
+        {
+            DeviceId = deviceId;
+            PurchaseId = purchaseId;
+            Price = price;
+            Quantity = quantity;
+        }
 
-        [Required]
-        [Display(Name = "Precio")]
-        public double Price { get; set; }
+        [StringLength(150, ErrorMessage = "La descripción no puede ser superior a 150 caracteres.")]
+        public string? Description { get; set; }
 
-        [Required]
-        [Display(Name = "Cantidad")]
-        public int Quantity { get; set; }
-
-        // Claves foráneas
-        [Required]
+        // CAMBIO: Debe ser int para que coincida con Device.Id
         public int DeviceId { get; set; }
-        [ForeignKey("DeviceId")]
+
         public virtual Device Device { get; set; }
 
-        [Required]
         public int PurchaseId { get; set; }
-        [ForeignKey("PurchaseId")]
+
         public virtual Purchase Purchase { get; set; }
-        public double PriceAtPurchase { get; internal set; }
+
+        [Precision(10, 2)]
+        public decimal Price { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "You must provide a quantity higher than 1")]
+        public int Quantity { get; set; }
     }
 }

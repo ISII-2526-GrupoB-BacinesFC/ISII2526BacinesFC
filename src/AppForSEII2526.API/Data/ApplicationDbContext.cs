@@ -1,21 +1,15 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using AppForSEII2526.API.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using AppForSEII2526.API.Models; // Para que reconozca ApplicationUser y los demás
+using NuGet.DependencyResolver;
 
-namespace AppForSEII2526.API.Data
+namespace AppForSEII2526.API.Data;
+
+public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationUser>(options)
 {
-    // Es vital heredar de IdentityDbContext<ApplicationUser> 
-    // para que la base de datos sepa gestionar tu modelo de usuario personalizado
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
-    {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
-
-        public DbSet<Model> Models { get; set; }
-        public DbSet<Device> Devices { get; set; }
-        public DbSet<Purchase> Purchases { get; set; }
-        public DbSet<PurchaseItem> PurchaseItems { get; set; }
-    }
+    public DbSet<Model> Model { get; set; }
+    public DbSet<Device> Device { get; set; }
+    public DbSet<Purchase> Purchase { get; set; }
+    public DbSet<PurchaseItem> PurchaseItem { get; set; }
+    public DbSet<ApplicationUser> ApplicationUser { get; set; }
 }

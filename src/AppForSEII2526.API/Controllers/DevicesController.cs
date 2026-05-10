@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using AppForSEII2526.API.Data;
-using AppForSEII2526.API.DTOs;
-using AppForSEII2526.API.Models;
+﻿using AppForSEII2526.API.DTOs.DeviceDTOs;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace AppForSEII2526.API.Controllers
 {
@@ -11,29 +10,34 @@ namespace AppForSEII2526.API.Controllers
     public class DevicesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<DevicesController> _logger;
 
-        // Inyección de dependencias para acceder a la DB
-        public DevicesController(ApplicationDbContext context)
+        public DevicesController(ApplicationDbContext context,
+            ILogger<DevicesController > logger)
         {
             _context = context;
+            _logger = logger;
         }
 
-        // GET: api/Devices
+
+
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DeviceForPurchaseDTO>>> GetDevicesForPurchase()
+        [Route("[action]")]
+        [ProducesResponseType(typeof(IList<DeviceForPurchaseDTO>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult> GetDispositivosParaComprar(string? filtroNombre, string? filtroColor)
         {
-            // Eager loading con Include y proyección a DTO con Select
-            return await _context.Devices
-                .Include(d => d.Model)
-                .Select(d => new DeviceForPurchaseDTO(
+            var device = await _context.Device
+                .Where(d => (d.Name.Contains(filtroNombre) || filtroNombre == null) && (d.Color.Contains(filtroColor) || filtroColor == null))
+                .Select(d => new DeviceForPurchaseDTO (
                     d.Id,
-                    d.Brand,
                     d.Name,
-                    d.Model != null ? d.Model.NameModel : "Sin modelo",
+                    d.Brand,
+                    d.Model,
                     d.Color,
-                    d.priceForPurchase
+                    (double)d.PriceForPurchase // Fuerza el cast a double o cambia el DTO a double
                 ))
                 .ToListAsync();
+            return Ok(device);
         }
     }
 }

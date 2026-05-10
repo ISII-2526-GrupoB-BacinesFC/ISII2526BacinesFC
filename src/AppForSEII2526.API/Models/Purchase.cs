@@ -1,53 +1,69 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System;
-using System.Collections.Generic;
-
-namespace AppForSEII2526.API.Models
+﻿namespace AppForSEII2526.API.Models
 {
-    public enum PaymentMethod
+    public enum PaymentMethodTypes
     {
         CreditCard,
-        PayPal
+        PayPal,
+        Cash
     }
-
     public class Purchase
     {
+
         [Key]
         public int Id { get; set; }
 
-        [Required]
-        [StringLength(50)]
-        [Display(Name = "Nombre del Cliente")]
-        public string CustomerUserName { get; set; }
-
-        [Required]
-        [StringLength(50)]
-        [Display(Name = "Apellidos del Cliente")]
-        public string CustomerUserSurname { get; set; }
-
-        [Required]
-        [StringLength(100)]
-        [Display(Name = "Dirección de Entrega")]
-        public string DeliveryAddress { get; set; }
-
-        [Required]
-        [Display(Name = "Método de Pago")]
-        public PaymentMethod PaymentMethod { get; set; }
-
-        [Required]
-        [DataType(System.ComponentModel.DataAnnotations.DataType.Date)]
-        [Display(Name = "Fecha de Compra")]
         public DateTime PurchaseDate { get; set; }
 
+        //TOTAL PRICE
         [Required]
-        [Display(Name = "Precio Total")]
+        [DataType(System.ComponentModel.DataAnnotations.DataType.Currency)]
+        [Range(0.5, double.MaxValue, ErrorMessage = "Minimum price is 0.5")]
+        [Display(Name = "Total Price")]
         public double TotalPrice { get; set; }
 
+        //TOTAL QUANTITY
         [Required]
-        [Display(Name = "Cantidad Total")]
+        [DataType(System.ComponentModel.DataAnnotations.DataType.Currency)]
+        [Range(1, int.MaxValue, ErrorMessage = "Minimum quantity is 1")]
+        [Display(Name = "Total Quantity")]
         public int TotalQuantity { get; set; }
 
-        public virtual IList<PurchaseItem> PurchaseItems { get; set; }
-        public string CustomerId { get; internal set; }
+
+
+
+        public IList<PurchaseItem> PurchaseItems { get; set; }
+        public ApplicationUser ApplicationUser { get; set; }
+
+        [Column("MetodoDePago")]
+        public PaymentMethodTypes PaymentMethodTypes { get; set; }
+        private Purchase()
+        {
+
+        }
+
+        public Purchase(PaymentMethodTypes paymentMethodTypes, DateTime purchaseDate, IList<PurchaseItem> purchaseItems, ApplicationUser applicationUser)
+        {
+            PaymentMethodTypes = paymentMethodTypes;
+            PurchaseDate = purchaseDate;
+            PurchaseItems = purchaseItems;
+            ApplicationUser = applicationUser;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is Purchase purchase &&
+                   Id == purchase.Id &&
+                   PurchaseDate == purchase.PurchaseDate &&
+                   TotalPrice == purchase.TotalPrice &&
+                   TotalQuantity == purchase.TotalQuantity &&
+                   EqualityComparer<IList<PurchaseItem>>.Default.Equals(PurchaseItems, purchase.PurchaseItems) &&
+                   EqualityComparer<ApplicationUser>.Default.Equals(ApplicationUser, purchase.ApplicationUser) &&
+                   PaymentMethodTypes == purchase.PaymentMethodTypes;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Id, PurchaseDate, TotalPrice, TotalQuantity, PurchaseItems, ApplicationUser, PaymentMethodTypes);
+        }
     }
 }
