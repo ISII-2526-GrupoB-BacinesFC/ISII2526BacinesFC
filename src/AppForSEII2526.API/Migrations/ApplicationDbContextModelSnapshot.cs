@@ -30,12 +30,14 @@ namespace AppForSEII2526.API.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeliveryAddress")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -71,9 +73,6 @@ namespace AppForSEII2526.API.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Street")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Surname")
@@ -125,26 +124,21 @@ namespace AppForSEII2526.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<decimal>("PriceForPurchase")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<int>("QuantityForPurchase")
+                        .HasColumnType("int");
+
                     b.Property<int>("Year")
-                        .HasColumnType("int");
-
-                    b.Property<double>("priceForPurchase")
-                        .HasColumnType("float");
-
-                    b.Property<double>("priceForRent")
-                        .HasColumnType("float");
-
-                    b.Property<int>("quantityForPurchase")
-                        .HasColumnType("int");
-
-                    b.Property<int>("quantityForRent")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ModelId");
 
-                    b.ToTable("Devices");
+                    b.ToTable("Device");
                 });
 
             modelBuilder.Entity("AppForSEII2526.API.Models.Model", b =>
@@ -155,14 +149,17 @@ namespace AppForSEII2526.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("NameModel")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Models");
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Model");
                 });
 
             modelBuilder.Entity("AppForSEII2526.API.Models.Purchase", b =>
@@ -173,27 +170,13 @@ namespace AppForSEII2526.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CustomerId")
+                    b.Property<string>("ApplicationUserId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<string>("CustomerUserName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("CustomerUserSurname")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("DeliveryAddress")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("PaymentMethod")
-                        .HasColumnType("int");
+                    b.Property<int>("PaymentMethodTypes")
+                        .HasColumnType("int")
+                        .HasColumnName("MetodoDePago");
 
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("datetime2");
@@ -206,44 +189,35 @@ namespace AppForSEII2526.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Purchases");
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("Purchase");
                 });
 
             modelBuilder.Entity("AppForSEII2526.API.Models.PurchaseItem", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
                     b.Property<int>("DeviceId")
                         .HasColumnType("int");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
-
-                    b.Property<double>("PriceAtPurchase")
-                        .HasColumnType("float");
 
                     b.Property<int>("PurchaseId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeviceId");
+                    b.HasKey("DeviceId", "PurchaseId");
 
                     b.HasIndex("PurchaseId");
 
-                    b.ToTable("PurchaseItems");
+                    b.ToTable("PurchaseItem");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -382,7 +356,7 @@ namespace AppForSEII2526.API.Migrations
             modelBuilder.Entity("AppForSEII2526.API.Models.Device", b =>
                 {
                     b.HasOne("AppForSEII2526.API.Models.Model", "Model")
-                        .WithMany()
+                        .WithMany("Devices")
                         .HasForeignKey("ModelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -390,10 +364,21 @@ namespace AppForSEII2526.API.Migrations
                     b.Navigation("Model");
                 });
 
+            modelBuilder.Entity("AppForSEII2526.API.Models.Purchase", b =>
+                {
+                    b.HasOne("AppForSEII2526.API.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApplicationUser");
+                });
+
             modelBuilder.Entity("AppForSEII2526.API.Models.PurchaseItem", b =>
                 {
                     b.HasOne("AppForSEII2526.API.Models.Device", "Device")
-                        .WithMany("PurchaseItems")
+                        .WithMany()
                         .HasForeignKey("DeviceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -460,9 +445,9 @@ namespace AppForSEII2526.API.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("AppForSEII2526.API.Models.Device", b =>
+            modelBuilder.Entity("AppForSEII2526.API.Models.Model", b =>
                 {
-                    b.Navigation("PurchaseItems");
+                    b.Navigation("Devices");
                 });
 
             modelBuilder.Entity("AppForSEII2526.API.Models.Purchase", b =>

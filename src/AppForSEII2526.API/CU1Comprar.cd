@@ -3,35 +3,42 @@
   <Class Name="AppForSEII2526.API.Models.Device">
     <Position X="2.75" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAICAAAABABFAAAAAAAACAQAAAAAAAAAAAgAgAABAAA=</HashCode>
+      <HashCode>AAACAAAABAAAAAAAAQAAAAQAAAAgAAAAAAgAgAABAAA=</HashCode>
       <FileName>Models\Device.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="AppForSEII2526.API.Models.Model">
-    <Position X="5" Y="1.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAACAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Models\Model.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="AppForSEII2526.API.Models.Purchase">
-    <Position X="7.25" Y="1.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAADAAAAAABAAAAQAKAAAAAAAAAAQAQAAAAAAAAAAAE=</HashCode>
-      <FileName>Models\Purchase.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="AppForSEII2526.API.Models.PurchaseItem">
     <Position X="9.5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQCAAAABQAgAgAAAAAAAAAAAAAAAAAAEAAAgAAAAAA=</HashCode>
+      <HashCode>AAQAAAAABQAgAgAAAAAAAAAAAAAAAAAAEAAAgAAAAAA=</HashCode>
       <FileName>Models\PurchaseItem.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Enum Name="AppForSEII2526.API.Models.PaymentMethod">
-    <Position X="7.25" Y="4.5" Width="1.5" />
+  <Class Name="AppForSEII2526.API.Models.Model">
+    <Position X="5" Y="1.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAABAAQAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAQAQAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Model.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.ApplicationUser">
+    <Position X="0.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAACAAAAQABAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\ApplicationUser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="AppForSEII2526.API.Models.Purchase">
+    <Position X="7.25" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAABAAAAQgIAAAAAIAAAAQIQAAAAAAAAAAAA=</HashCode>
+      <FileName>Models\Purchase.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="AppForSEII2526.API.Models.PaymentMethodTypes">
+    <Position X="7.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAQAAAAAAABAAQAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Models\Purchase.cs</FileName>
     </TypeIdentifier>
   </Enum>

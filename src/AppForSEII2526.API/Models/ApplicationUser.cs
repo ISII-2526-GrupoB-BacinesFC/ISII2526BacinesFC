@@ -3,37 +3,37 @@
 namespace AppForSEII2526.API.Models;
 
 // Add profile data for application users by adding properties to the ApplicationUser class
-public class ApplicationUser : IdentityUser {
-    public ApplicationUser() {
+public class ApplicationUser : IdentityUser
+{
+    public ApplicationUser()
+    {
     }
-
-    public ApplicationUser(string? name, string? surname, string? userName, string? street, string? city) {
-        
+    public ApplicationUser(string id, string name, string surname, string userName, string deliveryAddress, string email)
+    {
+        Id = id;
         Name = name;
         Surname = surname;
         UserName = userName;
-        Email = userName;
-        City=city;
-        Street=street;
+        DeliveryAddress = deliveryAddress;
+        Email = email;
     }
 
-    public ApplicationUser(string id, string? name, string? surname, string? userName, string? street, string? city)
-
-        //we call first the constructor without id
-        :this(name,surname,userName,street, city)  {
-        Id = id;
+    [Display(Name = "Name")]
+    public string? Name
+    {
+        get;
+        set;
     }
 
+    [Required]
+    [StringLength(100, ErrorMessage = "La direccion no puede ser superior a 100 carecteres")]
+    public string DeliveryAddress { get; set; }
 
-    public string? Name { get; set; }
-
-    public string? Surname { get; set; }
-
-    public string? Street { get; set; }
-    public string? City { get; set; }
-
-
+    [Display(Name = "Surname")]
+    public string? Surname
+    {
+        get;
+        set;
+    }
 }
-
-
 

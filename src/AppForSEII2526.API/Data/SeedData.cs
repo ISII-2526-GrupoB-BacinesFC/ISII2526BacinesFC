@@ -1,109 +1,146 @@
-﻿using Humanizer.Localisation;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using AppForSEII2526.API.Models;
+using System.Collections.Generic;
+using System;
+using System.Linq;
 
-namespace AppForSEII2526.API.Data {
-    public static class SeedData {
+namespace AppForSEII2526.API.Data
+{
+    public static class SeedData
+    {
 
-        public static void Initialize(ApplicationDbContext dbContext, IServiceProvider serviceProvider, ILogger logger) {
+        public static void Initialize(ApplicationDbContext dbContext, IServiceProvider serviceProvider, ILogger logger)
+        {
+            // Se mantienen los roles originales de la plantilla
             List<string> rolesNames = new List<string> { "Administrator", "Employee", "Customer" };
 
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            try {
+            try
+            {
                 SeedRoles(roleManager, rolesNames);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 logger.LogError(ex, "An error occurred seeding the roles in the Database.");
             }
 
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            try {
+            try
+            {
                 SeedUsers(userManager, rolesNames);
             }
-            catch (Exception ex) {
+            catch (Exception ex)
+            {
                 logger.LogError(ex, "An error occurred seeding the Users in the Database.");
             }
 
-            //try {
-            //    SeedGenresAndMovies(dbContext);
-            //}
-            //catch (Exception ex) {
-            //    logger.LogError(ex, "An error occurred seeding Genres and Movies in the Database.");
-            //}
-
-
+            // NUEVO: Cargamos tus modelos de dispositivos y los dispositivos propiamente dichos
+            try
+            {
+                SeedModelsAndDevices(dbContext);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "An error occurred seeding Models and Devices in the Database.");
+            }
         }
 
-        public static void SeedRoles(RoleManager<IdentityRole> roleManager, List<string> roles) {
-
-            foreach (string roleName in roles) {
-                //it checks such role does not exist in the database 
-                if (!roleManager.RoleExistsAsync(roleName).Result) {
-                    IdentityRole role = new IdentityRole();
-                    role.Name = roleName;
-                    role.NormalizedName = roleName;
+        public static void SeedRoles(RoleManager<IdentityRole> roleManager, List<string> roles)
+        {
+            foreach (string roleName in roles)
+            {
+                if (!roleManager.RoleExistsAsync(roleName).Result)
+                {
+                    IdentityRole role = new IdentityRole
+                    {
+                        Name = roleName,
+                        NormalizedName = roleName.ToUpper()
+                    };
                     IdentityResult roleResult = roleManager.CreateAsync(role).Result;
                 }
             }
-
         }
 
-        public static void SeedUsers(UserManager<ApplicationUser> userManager, List<string> roles) {
-            ////first, it checks the user does not already exist in the DB
-            if (userManager.FindByNameAsync("elena@uclm.es").Result == null) {
-
-                // You must update the constructor according to your needs
+        public static void SeedUsers(UserManager<ApplicationUser> userManager, List<string> roles)
+        {
+            if (userManager.FindByNameAsync("elena@uclm.es").Result == null)
+            {
+                // He adaptado el constructor de ApplicationUser según lo que pusiste antes
                 ApplicationUser user = new ApplicationUser("1", "Elena", "Navarro Martínez", "elena@uclm.es", "Avda. España 2", "Albacete");
                 user.EmailConfirmed = true;
 
                 var result = userManager.CreateAsync(user, "Password1234%");
                 result.Wait();
 
-                if (result.IsCompletedSuccessfully) {
-                    //administrator role
+                if (result.IsCompletedSuccessfully)
+                {
+                    // Asignamos el rol de Administrador (el primero de la lista)
                     userManager.AddToRoleAsync(user, roles[0]).Wait();
                 }
             }
-
         }
 
-        //public static void SeedGenresAndMovies(ApplicationDbContext dbcontext) {
-        //    string[] genresnames = ["Sci - Fi", "Drama", "Comedy", "Soap opera"];
-        //    List<Genre> genres = [];
-        //    Movie movie;
-        //    foreach (string genrename in genresnames) {
-        //        var genre = dbcontext.Genres.FirstOrDefault(g => g.Name == genrename);
-        //        if (genre == null)
-        //            genres.Add(new Genre(genrename));
-        //        else
-        //            genres.Add(genre);
-        //    }
-        //    if (dbcontext.Movies.FirstOrDefault(m => m.Title == "The last of us") == null) {
-        //        movie = new Movie("The last of us", genres[0], new DateTime(2023, 03, 15), 10.0m, 5, 1.0, 1);
-        //        dbcontext.Movies.Add(movie);
+        public static void SeedModelsAndDevices(ApplicationDbContext dbcontext)
+        {
+            // 1. Crear los "Model" (categorías de dispositivos)
+            string[] modelNames = { "Smartphone", "Tablet", "Laptop", "Smartwatch" };
+            List<Model> models = new List<Model>();
 
-        //    }
+            foreach (string name in modelNames)
+            {
+                var model = dbcontext.Model.FirstOrDefault(m => m.Name == name);
+                if (model == null)
+                {
+                    var newModel = new Model(name);
+                    dbcontext.Model.Add(newModel);
+                    models.Add(newModel);
+                }
+                else
+                {
+                    models.Add(model);
+                }
+            }
 
-        //    //it saves the modification of dbcontext to the database
-        //    dbcontext.SaveChanges();
+            // Guardamos para tener los IDs de los modelos
+            dbcontext.SaveChanges();
 
-        //    //alternatively you may have used a raw SQL
-        //    //dbcontext.Database.ExecuteSqlRaw("INSERT INTO [Movies] ([Id], [Title], [GenreId], [ReleaseDate], [PriceForPurchase], [QuantityForPurchase], [PriceForRenting], [QuantityForRenting]) VALUES (1, N'The lord of the rings', 1, N'2011-10-20 00:00:00', 10, 1000, 1, 100)");
-        //    //dbcontext.Database.ExecuteSqlRaw("INSERT INTO [Movies] ([Id], [Title], [GenreId], [ReleaseDate], [PriceForPurchase], [QuantityForPurchase], [PriceForRenting], [QuantityForRenting]) VALUES (2, N'The flying castle', 2, N'2007-04-04 00:00:00', 20, 1000, 3, 10)");
+            // 2. Crear los "Device" reales
+            if (!dbcontext.Device.Any(d => d.Name == "iPhone 15 Pro"))
+            {
+                var iphone = new Device(
+                    models.First(m => m.Name == "Smartphone"),
+                    "Apple", "Negro", "iPhone 15 Pro",
+                    1200, // Usando double
+                    10, 2024
+                );
+                dbcontext.Device.Add(iphone);
+            }
 
+            if (!dbcontext.Device.Any(d => d.Name == "Galaxy S24"))
+            {
+                var samsung = new Device(
+                    models.First(m => m.Name == "Smartphone"),
+                    "Samsung", "Gris", "Galaxy S24",
+                    950, // Usando double
+                    15, 2024
+                );
+                dbcontext.Device.Add(samsung);
+            }
 
-        //    //Since EFCORE7, you can perform bulk updates with linq.
-        //    //dbcontext.Movies
-        //        //.Where(m=>m.Id<10)
-        //        //.ExecuteUpdate(setters => setters.SetProperty(m => m.QuantityForPurchase, 10));
+            if (!dbcontext.Device.Any(d => d.Name == "iPad Air"))
+            {
+                var ipad = new Device(
+                    models.First(m => m.Name == "Tablet"),
+                    "Apple", "Azul", "iPad Air",
+                    700, // Usando double
+                    8, 2023
+                );
+                dbcontext.Device.Add(ipad);
+            }
 
-        //    //other example using existing information: add 100 to the QuantityForPurchase of each Movie
-        //    //dbcontext.Movies.ExecuteUpdate(s => s.SetProperty(m => m.QuantityForPurchase, m=>m.QuantityForPurchase+100));
-
-        //    //You can alternatively use raw SQL to perform the operation where performance is sensitive:
-        //    //dbcontext.Database.ExecuteSqlRaw("UPDATE [Movies] SET [QuantityForPurchase] = 100");
-
-        //    dbcontext.SaveChanges();
-
-
-        //}
+            // Guardamos todo en la base de datos
+            dbcontext.SaveChanges();
+        }
     }
 }

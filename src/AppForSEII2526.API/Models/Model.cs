@@ -1,15 +1,25 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace AppForSEII2526.API.Models
+﻿namespace AppForSEII2526.API.Models
 {
+    //Title is unique for each instance of Movie
+    [Index(nameof(Name), IsUnique = true)]
     public class Model
     {
-        [Key]
+        public Model()
+        {
+        }
+
+        public Model(string name)
+        {
+            Name = name;
+        }
+
         public int Id { get; set; }
 
-        [Required(ErrorMessage = "El nombre del modelo es obligatorio")]
-        [StringLength(50)]
-        [Display(Name = "Nombre del modelo")]
-        public string NameModel { get; set; }
+        [StringLength(50, ErrorMessage = "Model name cannot be longer than 50 characters.", MinimumLength = 4)]
+        public string Name { get; set; }
+
+        //it assigns a value by default
+        public IList<Device> Devices { get; set; } = new List<Device>();
+
     }
 }
