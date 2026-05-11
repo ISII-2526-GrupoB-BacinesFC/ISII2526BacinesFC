@@ -58,7 +58,7 @@ namespace AppForSEII2526.API.Controllers
                         ci.Device.Brand,
                         ci.Device.Model.Name,
                         ci.Device.Color,
-                        Math.Round((double)ci.Device.PriceForPurchase, 2),
+                        Math.Round(ci.Device.PriceForPurchase, 2),
                         ci.Quantity, // Seguimos usando la cantidad total de items en la compra
                         ci.Description
                     ))
@@ -80,6 +80,7 @@ namespace AppForSEII2526.API.Controllers
         [ProducesResponseType(typeof(string), (int)HttpStatusCode.Conflict)]
         [ProducesResponseType(typeof(purchaseDetailDTO), (int)HttpStatusCode.Created)]
         public async Task<ActionResult> CrearCompra(purchaseForCreateDTO purchaseForCreate)
+                                                    
         {
             // Validar que hay items en la compra
             if (purchaseForCreate.PurchaseItems == null || purchaseForCreate.PurchaseItems.Count == 0)
@@ -107,7 +108,8 @@ namespace AppForSEII2526.API.Controllers
                 user
             );
 
-            double totalPrice = 0;
+            
+            decimal totalPrice = 0m;
             int totalQuantity = 0;
 
             // Procesar cada item de la compra
@@ -164,10 +166,10 @@ namespace AppForSEII2526.API.Controllers
                 purchase.PurchaseItems.Add(purchaseItem);
 
                 // Calcular totales
-                totalPrice += (double)device.PriceForPurchase * itemDTO.Quantity;
+                totalPrice += device.PriceForPurchase * itemDTO.Quantity;
                 totalQuantity += itemDTO.Quantity;
                 // Actualizar el precio en el DTO para la respuesta
-                itemDTO.Price = (double)device.PriceForPurchase;
+                itemDTO.Price = device.PriceForPurchase;
             }
 
             // Establecer los totales en la compra
@@ -221,7 +223,7 @@ namespace AppForSEII2526.API.Controllers
                     pi.Device.Brand,
                     pi.Device.Model.Name,
                     pi.Device.Color,
-                    (double)pi.Price, // Hacemos el cast a double si tu DTO usa double
+                    pi.Price, 
                     pi.Quantity,
                     pi.Description
                 )).ToList()

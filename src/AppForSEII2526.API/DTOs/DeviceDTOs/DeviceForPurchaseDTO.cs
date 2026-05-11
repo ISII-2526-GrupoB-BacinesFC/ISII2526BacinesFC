@@ -2,14 +2,14 @@
 {
     public class DeviceForPurchaseDTO
     {
-        public DeviceForPurchaseDTO(int id, string nameDevice, string brand, Model model, string color, double priceForPurchase)
+        public DeviceForPurchaseDTO(int id, string nameDevice, string brand, Model model, string color, decimal priceForPurchase)
         {
             Id = id;
-            nameDevice = nameDevice;
+            NameDevice = nameDevice;
             Brand = brand;
             Model = model;
             Color = color;
-            priceForPurchase = priceForPurchase;
+            PriceForPurchase = priceForPurchase;
         }
 
         public int Id { get; set; }
@@ -17,7 +17,7 @@
         //NOMBRE DISPOSITIVO
         [Required]
         [StringLength(50, ErrorMessage = "El nombre del dispositivo no puede ser mayor de 50 caracteres")]
-        public string nameDevice { get; set; }
+        public string NameDevice { get; set; }
 
         //MARCA
         [Required]
@@ -38,17 +38,17 @@
         [Range(0.5, float.MaxValue, ErrorMessage = "El precio mínimo es de 0,5 ")]
         [Display(Name = "Precio para compra")]
         [Precision(10, 2)]
-        public double priceForPurchase { get; set; }
+        public decimal PriceForPurchase { get; set; }
 
         public override bool Equals(object? obj)
         {
             return obj is DeviceForPurchaseDTO dTO &&
                    Id == dTO.Id &&
-                   nameDevice == dTO.nameDevice &&
+                   NameDevice == dTO.NameDevice &&
                    Brand == dTO.Brand &&
                    EqualityComparer<Model>.Default.Equals(Model, dTO.Model) &&
                    Color == dTO.Color &&
-                   priceForPurchase == dTO.priceForPurchase;
+                   PriceForPurchase == dTO.PriceForPurchase;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace AppForSEII2526.API.DTOs.PurchaseDTOs
     public class purchaseDetailDTO
     {
 
-        public purchaseDetailDTO(string nameUsuario, string surenameUsuario, string deliveryAddress, DateTime purchaseDateFrom, double totalPrice, int totalQuantity, IList<purchaseItemDTO> purchaseItems)
+        public purchaseDetailDTO(string nameUsuario, string surenameUsuario, string deliveryAddress, DateTime purchaseDateFrom, decimal totalPrice, int totalQuantity, IList<purchaseItemDTO> purchaseItems)
         {
             name = nameUsuario;
             surename = surenameUsuario;
@@ -44,7 +44,9 @@ namespace AppForSEII2526.API.DTOs.PurchaseDTOs
         [DataType(System.ComponentModel.DataAnnotations.DataType.Currency)]
         [Range(0.5, double.MaxValue, ErrorMessage = "Precio mínimo es O,5")]
         [Display(Name = "Precio Total")]
-        public double TotalPrice { get; set; }
+
+        [Precision(10, 2)]
+        public decimal TotalPrice { get; set; }
 
         //CANTIDAD TOTAL
         [Required]
@@ -68,7 +70,7 @@ namespace AppForSEII2526.API.DTOs.PurchaseDTOs
                 surename == dTO.surename &&
                 DeliveryAddress == dTO.DeliveryAddress &&
                 fechasCasiIguales &&
-                Math.Abs(TotalPrice - dTO.TotalPrice) < 0.01 &&
+                Math.Abs(TotalPrice - dTO.TotalPrice) < 0.01m &&
                 TotalQuantity == dTO.TotalQuantity &&
                 PurchaseItems.SequenceEqual(dTO.PurchaseItems);
         }

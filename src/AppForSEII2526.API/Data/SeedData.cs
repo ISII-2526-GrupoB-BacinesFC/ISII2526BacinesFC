@@ -4,15 +4,15 @@ using AppForSEII2526.API.Models;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AppForSEII2526.API.Data
 {
     public static class SeedData
     {
-
         public static void Initialize(ApplicationDbContext dbContext, IServiceProvider serviceProvider, ILogger logger)
         {
-            // Se mantienen los roles originales de la plantilla
             List<string> rolesNames = new List<string> { "Administrator", "Employee", "Customer" };
 
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -22,7 +22,7 @@ namespace AppForSEII2526.API.Data
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred seeding the roles in the Database.");
+                logger.LogError(ex, "An error occurred seeding the roles.");
             }
 
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -32,17 +32,16 @@ namespace AppForSEII2526.API.Data
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred seeding the Users in the Database.");
+                logger.LogError(ex, "An error occurred seeding the Users.");
             }
 
-            // NUEVO: Cargamos tus modelos de dispositivos y los dispositivos propiamente dichos
             try
             {
                 SeedModelsAndDevices(dbContext);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "An error occurred seeding Models and Devices in the Database.");
+                logger.LogError(ex, "An error occurred seeding Models and Devices.");
             }
         }
 
@@ -57,7 +56,7 @@ namespace AppForSEII2526.API.Data
                         Name = roleName,
                         NormalizedName = roleName.ToUpper()
                     };
-                    IdentityResult roleResult = roleManager.CreateAsync(role).Result;
+                    _ = roleManager.CreateAsync(role).Result;
                 }
             }
         }
@@ -66,16 +65,13 @@ namespace AppForSEII2526.API.Data
         {
             if (userManager.FindByNameAsync("elena@uclm.es").Result == null)
             {
-                // He adaptado el constructor de ApplicationUser según lo que pusiste antes
                 ApplicationUser user = new ApplicationUser("1", "Elena", "Navarro Martínez", "elena@uclm.es", "Avda. España 2", "Albacete");
                 user.EmailConfirmed = true;
 
-                var result = userManager.CreateAsync(user, "Password1234%");
-                result.Wait();
+                var result = userManager.CreateAsync(user, "Password1234%").Result;
 
-                if (result.IsCompletedSuccessfully)
+                if (result.Succeeded)
                 {
-                    // Asignamos el rol de Administrador (el primero de la lista)
                     userManager.AddToRoleAsync(user, roles[0]).Wait();
                 }
             }
@@ -83,64 +79,32 @@ namespace AppForSEII2526.API.Data
 
         public static void SeedModelsAndDevices(ApplicationDbContext dbcontext)
         {
-            // 1. Crear los "Model" (categorías de dispositivos)
-            string[] modelNames = { "Smartphone", "Tablet", "Laptop", "Smartwatch" };
-            List<Model> models = new List<Model>();
-
-            foreach (string name in modelNames)
+            // 1. Asegurar que existen los Modelos
+            if (!dbcontext.Model.Any())
             {
-                var model = dbcontext.Model.FirstOrDefault(m => m.Name == name);
-                if (model == null)
-                {
-                    var newModel = new Model(name);
-                    dbcontext.Model.Add(newModel);
-                    models.Add(newModel);
-                }
-                else
-                {
-                    models.Add(model);
-                }
-            }
-
-            // Guardamos para tener los IDs de los modelos
-            dbcontext.SaveChanges();
-
-            // 2. Crear los "Device" reales
-            if (!dbcontext.Device.Any(d => d.Name == "iPhone 15 Pro"))
-            {
-                var iphone = new Device(
-                    models.First(m => m.Name == "Smartphone"),
-                    "Apple", "Negro", "iPhone 15 Pro",
-                    1200, // Usando double
-                    10, 2024
+                dbcontext.Model.AddRange(
+                    new Model("Smartphone"),
+                    new Model("Tablet"),
+                    new Model("Laptop")
                 );
-                dbcontext.Device.Add(iphone);
+                dbcontext.SaveChanges();
             }
 
-            if (!dbcontext.Device.Any(d => d.Name == "Galaxy S24"))
+            // Recuperamos los modelos de la DB para que EF los tenga traqueados
+            var smartphoneModel = dbcontext.Model.First(m => m.Name == "Smartphone");
+            var tabletModel = dbcontext.Model.First(m => m.Name == "Tablet");
+
+            // 2. Crear los Devices si no existen
+            if (!dbcontext.Device.Any())
             {
-                var samsung = new Device(
-                    models.First(m => m.Name == "Smartphone"),
-                    "Samsung", "Gris", "Galaxy S24",
-                    950, // Usando double
-                    15, 2024
+                dbcontext.Device.AddRange(
+                    new Device(smartphoneModel, "Apple", "Negro", "iPhone 15 Pro", 1200.0m, 10, 2024),
+                    new Device(smartphoneModel, "Samsung", "Gris", "Galaxy S24", 950.0m, 15, 2024),
+                    new Device(tabletModel, "Apple", "Azul", "iPad Air", 700.0m, 8, 2023)
                 );
-                dbcontext.Device.Add(samsung);
-            }
 
-            if (!dbcontext.Device.Any(d => d.Name == "iPad Air"))
-            {
-                var ipad = new Device(
-                    models.First(m => m.Name == "Tablet"),
-                    "Apple", "Azul", "iPad Air",
-                    700, // Usando double
-                    8, 2023
-                );
-                dbcontext.Device.Add(ipad);
+                dbcontext.SaveChanges();
             }
-
-            // Guardamos todo en la base de datos
-            dbcontext.SaveChanges();
         }
     }
 }

@@ -19,7 +19,8 @@
         [DataType(System.ComponentModel.DataAnnotations.DataType.Currency)]
         [Range(0.5, double.MaxValue, ErrorMessage = "Minimum price is 0.5")]
         [Display(Name = "Total Price")]
-        public double TotalPrice { get; set; }
+        [Precision(10, 2)]
+        public decimal TotalPrice { get; set; }
 
         //TOTAL QUANTITY
         [Required]

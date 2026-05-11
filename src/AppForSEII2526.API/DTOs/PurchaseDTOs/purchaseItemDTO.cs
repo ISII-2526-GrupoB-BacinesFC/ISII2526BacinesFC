@@ -5,7 +5,7 @@
         public purchaseItemDTO() 
         { 
         }
-        public purchaseItemDTO(string brand, string model, string color, double price, int quantity, string? description = null)
+        public purchaseItemDTO(string brand, string model, string color, decimal price, int quantity, string? description = null)
         {
             Brand = brand;
             Model = model;
@@ -29,7 +29,7 @@
         [Range(0.5, float.MaxValue, ErrorMessage = "El precio mínimo es de 0,5 ")]
         [Display(Name = "Precio para compra")]
         [Precision(10, 2)]
-        public double Price { get; set; }
+        public decimal Price { get; set; }
 
         [StringLength(150, ErrorMessage = "La descripcion no puede ser mayor de 150 caracteres")]
         public string Description { get; set; }

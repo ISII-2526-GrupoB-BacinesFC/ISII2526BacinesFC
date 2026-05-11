@@ -51,7 +51,8 @@
 
         [Display(Name = "Total Price")]
         [JsonPropertyName("TotalPrice")]
-        public double TotalPrice
+        [Precision(10, 2)]
+        public decimal TotalPrice
         {
             get
             {

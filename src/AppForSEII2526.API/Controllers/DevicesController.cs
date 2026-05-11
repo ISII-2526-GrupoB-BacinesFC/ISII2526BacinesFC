@@ -34,7 +34,7 @@ namespace AppForSEII2526.API.Controllers
                     d.Brand,
                     d.Model,
                     d.Color,
-                    (double)d.PriceForPurchase // Fuerza el cast a double o cambia el DTO a double
+                    d.PriceForPurchase
                 ))
                 .ToListAsync();
             return Ok(device);

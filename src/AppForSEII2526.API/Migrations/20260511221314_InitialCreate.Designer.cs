@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppForSEII2526.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260510113635_InitialCreate")]
+    [Migration("20260511221314_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -184,8 +184,9 @@ namespace AppForSEII2526.API.Migrations
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<double>("TotalPrice")
-                        .HasColumnType("float");
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<int>("TotalQuantity")
                         .HasColumnType("int");
