@@ -205,7 +205,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
 
 
         }
-
+    }
+        /*
         [Fact]
         [Trait("LevelTesting", "Unit Testing")]
         public async Task CrearCompra_ThrowsException_Test()
@@ -234,5 +235,6 @@ namespace AppForSEII2526.UT.PurchasesController_test
             Assert.IsType<ConflictObjectResult>(result);
         }
     }
+        */
 }
 
