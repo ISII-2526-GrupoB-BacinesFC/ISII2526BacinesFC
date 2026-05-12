@@ -1,15 +1,14 @@
 ﻿namespace AppForSEII2526.API.Models
 {
-    [PrimaryKey(nameof(DeviceId), nameof(PurchaseId))]
+    [PrimaryKey(nameof(DeviceId))]
     public class PurchaseItem
     {
         public PurchaseItem() { }
 
         // CAMBIO: deviceId ahora es int
-        public PurchaseItem(int deviceId, int purchaseId, decimal price, int quantity)
+        public PurchaseItem(int deviceId, decimal price, int quantity)
         {
             DeviceId = deviceId;
-            PurchaseId = purchaseId;
             Price = price;
             Quantity = quantity;
         }
@@ -20,9 +19,8 @@
         // CAMBIO: Debe ser int para que coincida con Device.Id
         public int DeviceId { get; set; }
 
+        [ForeignKey("DeviceId")]
         public virtual Device Device { get; set; }
-
-        public int PurchaseId { get; set; }
 
         public virtual Purchase Purchase { get; set; }
 

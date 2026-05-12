@@ -65,7 +65,7 @@ namespace AppForSEII2526.API.Data
         {
             if (userManager.FindByNameAsync("elena@uclm.es").Result == null)
             {
-                ApplicationUser user = new ApplicationUser("1", "Elena", "Navarro Martínez", "elena@uclm.es", "Avda. España 2", "Albacete");
+                ApplicationUser user = new ApplicationUser("1", "Elena", "Navarro Martínez", "Avda. España 2, Albacete", "elena@uclm.es");
                 user.EmailConfirmed = true;
 
                 var result = userManager.CreateAsync(user, "Password1234%").Result;

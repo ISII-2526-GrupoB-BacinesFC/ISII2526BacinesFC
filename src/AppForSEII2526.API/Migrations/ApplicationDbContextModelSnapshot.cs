@@ -200,9 +200,6 @@ namespace AppForSEII2526.API.Migrations
                     b.Property<int>("DeviceId")
                         .HasColumnType("int");
 
-                    b.Property<int>("PurchaseId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Description")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
@@ -211,10 +208,13 @@ namespace AppForSEII2526.API.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<int>("PurchaseId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("DeviceId", "PurchaseId");
+                    b.HasKey("DeviceId");
 
                     b.HasIndex("PurchaseId");
 
