@@ -74,5 +74,10 @@ namespace AppForSEII2526.API.DTOs.PurchaseDTOs
                 TotalQuantity == dTO.TotalQuantity &&
                 PurchaseItems.SequenceEqual(dTO.PurchaseItems);
         }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(name, surename, DeliveryAddress, PurchaseDateFrom, TotalPrice, TotalQuantity, PurchaseItems);
+        }
     }
 }

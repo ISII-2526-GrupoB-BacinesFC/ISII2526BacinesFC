@@ -225,14 +225,14 @@ namespace AppForSEII2526.API.Migrations
                 columns: table => new
                 {
                     DeviceId = table.Column<int>(type: "int", nullable: false),
-                    PurchaseId = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    PurchaseId = table.Column<int>(type: "int", nullable: false),
                     Price = table.Column<decimal>(type: "decimal(10,2)", precision: 10, scale: 2, nullable: false),
                     Quantity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PurchaseItem", x => new { x.DeviceId, x.PurchaseId });
+                    table.PrimaryKey("PK_PurchaseItem", x => x.DeviceId);
                     table.ForeignKey(
                         name: "FK_PurchaseItem_Device_DeviceId",
                         column: x => x.DeviceId,

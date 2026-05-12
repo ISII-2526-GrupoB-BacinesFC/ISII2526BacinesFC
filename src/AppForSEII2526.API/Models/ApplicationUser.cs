@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace AppForSEII2526.API.Models;
 
@@ -8,10 +9,9 @@ public class ApplicationUser : IdentityUser
     public ApplicationUser()
     {
     }
-    public ApplicationUser(string id, string name, string surname, string userName, string deliveryAddress, string email)
+    public ApplicationUser(string id, string surname, string userName, string deliveryAddress, string email)
     {
         Id = id;
-        Name = name;
         Surname = surname;
         UserName = userName;
         DeliveryAddress = deliveryAddress;

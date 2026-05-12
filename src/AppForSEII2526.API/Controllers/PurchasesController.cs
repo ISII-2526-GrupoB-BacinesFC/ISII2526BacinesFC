@@ -47,8 +47,8 @@ namespace AppForSEII2526.API.Controllers
 
             // Tenemos que crear los PurchaseItemDTO manualmente en memoria pq SQLite no lo soprta y no lo traducimos a SQL
             var purchaseDTO = new purchaseDetailDTO(
-                purchase.ApplicationUser.UserName,
                 purchase.ApplicationUser.Surname,
+                purchase.ApplicationUser.UserName,
                 purchase.ApplicationUser.DeliveryAddress,
                 purchase.PurchaseDate,
                 Math.Round(purchase.TotalPrice, 2),
