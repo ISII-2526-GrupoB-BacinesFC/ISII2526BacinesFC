@@ -52,6 +52,8 @@ namespace AppForSEII2526.UT.PurchasesController_test
             // Datos base: Usuario
             var user = new ApplicationUser("user-cliente-001", _nombreUsuario, _apellidosUsuario, _direccionEnvio, _usuarioEmail)
             {
+                UserName = _nombreUsuario,
+                Surname = _apellidosUsuario,
                 DeliveryAddress = _direccionEnvio
             };
 
@@ -88,7 +90,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
             var compraUsuarioNoExiste = new purchaseForCreateDTO("Pedro", "Martínez", "Calle Falsa 123, Madrid", PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now.AddDays(1), itemsValidos);
             //Caso 2: dispositivo no existe
 
-            var compraDispositivoNoExiste = new purchaseForCreateDTO("Juan", _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now.AddDays(1),
+            var compraDispositivoNoExiste = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now.AddDays(1),
                 new List<purchaseItemDTO>()
                 {
                     new purchaseItemDTO("Apple", "iPhone 20 Pro Max", "Blanco", 4399.00m, 1, "No existe en BD")
@@ -202,6 +204,34 @@ namespace AppForSEII2526.UT.PurchasesController_test
             Assert.Equal(expectedCompraDetailDTO, actualCompraDetailDTO);
 
 
+        }
+
+        [Fact]
+        [Trait("LevelTesting", "Unit Testing")]
+        public async Task CrearCompra_ThrowsException_Test()
+        {
+            // Arrange
+            var mockLogger = new Mock<ILogger<PurchasesController>>();
+            var controller = new PurchasesController(_context, mockLogger.Object);
+
+            // Forzamos un error: intentamos crear una compra pero manipulamos el contexto 
+            // para que falle. Una forma fácil es cerrar la conexión antes de guardar.
+            _context.Database.CloseConnection();
+
+            var purchaseDTO = new purchaseForCreateDTO(
+                _nombreUsuario, _apellidosUsuario, _direccionEnvio,
+                PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now,
+                new List<purchaseItemDTO> {
+            new purchaseItemDTO(_marcaValida, _modeloValido, _colorValido, 100m, 1, "Test")
+                }
+            );
+
+            // Act
+            var result = await controller.CrearCompra(purchaseDTO);
+
+            // Assert
+            // Esto debería entrar en el bloque 'catch (Exception ex)'
+            Assert.IsType<ConflictObjectResult>(result);
         }
     }
 }

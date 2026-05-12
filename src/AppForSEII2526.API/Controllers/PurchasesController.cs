@@ -24,12 +24,6 @@ namespace AppForSEII2526.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.NotFound)]
         public async Task<ActionResult> GetPurchaseDetail(int id)
         {
-            if (_context.Purchase == null)
-            {
-                _logger.LogError("Error: La tabla Purchase no existe");
-                return NotFound();
-            }
-
             // Nos traemos la compra con sus items y los dispositivos relacionados
             var purchase = await _context.Purchase
                 .Include(c => c.ApplicationUser)
@@ -47,8 +41,8 @@ namespace AppForSEII2526.API.Controllers
 
             // Tenemos que crear los PurchaseItemDTO manualmente en memoria pq SQLite no lo soprta y no lo traducimos a SQL
             var purchaseDTO = new purchaseDetailDTO(
-                purchase.ApplicationUser.Surname,
                 purchase.ApplicationUser.UserName,
+                purchase.ApplicationUser.Surname,
                 purchase.ApplicationUser.DeliveryAddress,
                 purchase.PurchaseDate,
                 Math.Round(purchase.TotalPrice, 2),
@@ -175,12 +169,6 @@ namespace AppForSEII2526.API.Controllers
             // Establecer los totales en la compra
             purchase.TotalPrice = totalPrice;
             purchase.TotalQuantity = totalQuantity;
-
-            // Verificar si hay errores de validación
-            if (ModelState.ErrorCount > 0)
-            {
-                return BadRequest(new ValidationProblemDetails(ModelState));
-            }
 
             // Log para debugging
             _logger.LogInformation($"Creando compra con {purchase.PurchaseItems.Count} items");
