@@ -1,0 +1,80 @@
+﻿@page "/Purchases/DetailPurchase/{IdCompra:int}"
+@using AppForSEII2526.Web.API
+@using AppForSEII2526.Web
+@inject PurchasesStateContainer CompraState
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<table class="table table-borderless table-sm">
+    <tr>
+        <th>Name and Surname</th>
+        <td id="NameSurname">@CompraState.Purchase.CustomerUserName @CompraState.Purchase.CustomerNameSurname</td>
+    </tr>
+    <tr>
+        <th>Delivery Address</th>
+        <td id="DeliveryAddress">@CompraState.Purchase.DeliveryAddress</td>
+    </tr>
+
+    <tr>
+        <th>Fecha compra</th>
+        <td id="FechaCompra">
+            @(CompraState.Purchase.DateTime == default
+                        ? DateTime.Now.ToShortDateString()
+                        : CompraState.Purchase.DateTime)
+        </td>
+    </tr>
+
+</table>
+
+<h4>Dispositivos Comprados</h4>
+
+<table class="table" id="PurchasedDevices">
+    <thead>
+        <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Modelo</th>
+            <th scope="col">Color</th>
+            <th scope="col">Precio</th>
+            <th scope="col">Cantidad</th>
+            <th scope="col">Descripcion</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (PurchaseItemDTO item in CompraState.Purchase.PurchaseItems)
+        {
+            <tr id="RentalItem_@item.Brand">
+                <td>@item.Model</td>
+                <td>@item.Brand</td>
+                <td>@item.Color</td>
+                <td>@item.Price.ToString("C2")</td>
+                <td>@item.Quantity</td>
+                <td>@item.Description</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <span class="h5">Cantidad total de Dispositivos</span>
+            <td id="CantidadTotal" class="fw-bold">@CompraState.Purchase.Quantity</td>
+            <span class="h5">Total (EUR)</span>
+            <td id="TotalPrice" class="fw-bold">@CompraState.TotalPrice.ToString("C2")</td>
+        </tr>
+    </tfoot>
+
+</table>
+
+
+@code {
+    [Parameter]
+    public int IdCompra { get; set; }
+    private PurchaseDetailDTO compra;
+
+    
+    protected override void OnInitialized()
+    {
+        if (CompraState.Purchase.PurchaseItems.Count == 0)
+        {
+            Navigation.NavigateTo("/Purchases/SelectDevices");
+        }
+    }
+}
