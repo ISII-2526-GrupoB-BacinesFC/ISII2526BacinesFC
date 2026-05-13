@@ -76,7 +76,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
         {
 
             // sin items
-            var compraSinItems = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now.AddDays(1), // cantidad
+            var compraSinItems = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, 1, // cantidad
             new List<purchaseItemDTO>() // vacío
             );
 
@@ -87,10 +87,10 @@ namespace AppForSEII2526.UT.PurchasesController_test
             };
 
             //Caso 1:usuario no existe
-            var compraUsuarioNoExiste = new purchaseForCreateDTO("Pedro", "Martínez", "Calle Falsa 123, Madrid", PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now.AddDays(1), itemsValidos);
+            var compraUsuarioNoExiste = new purchaseForCreateDTO("Pedro", "Martínez", "Calle Falsa 123, Madrid", PaymentMethodTypes.CreditCard, 1, itemsValidos);
             //Caso 2: dispositivo no existe
 
-            var compraDispositivoNoExiste = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now.AddDays(1),
+            var compraDispositivoNoExiste = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, 1,
                 new List<purchaseItemDTO>()
                 {
                     new purchaseItemDTO("Apple", "iPhone 20 Pro Max", "Blanco", 4399.00m, 1, "No existe en BD")
@@ -99,7 +99,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
 
             //Caso 3: dispositivo sin stock
 
-            var compraDispositivoSinStock = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now.AddDays(1),
+            var compraDispositivoSinStock = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, 1,
                  new List<purchaseItemDTO>()
                  {
                     new purchaseItemDTO(_marcaSinStock, _modeloSinStock, _colorSinStock, 1299.00m, 1, "Sin stock disponible")
@@ -107,7 +107,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
             );
 
             //Examen
-            var compraExamen = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, DateTime.Now, DateTime.Now.AddDays(1),
+            var compraExamen = new purchaseForCreateDTO(_nombreUsuario, _apellidosUsuario, _direccionEnvio, PaymentMethodTypes.CreditCard, 1,
                  new List<purchaseItemDTO>()
                  {
                     new purchaseItemDTO(_marcaExamen, _modeloExamen, _colorExamen, 1499.99m, 1, "No se puede comprar")
@@ -171,8 +171,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
                 _apellidosUsuario,
                 _direccionEnvio,
                 PaymentMethodTypes.CreditCard,
-                DateTime.Now,
-                DateTime.Now.AddDays(1),
+                2,
                 new List<purchaseItemDTO>()
                 {
                     new purchaseItemDTO(_marcaValida, _modeloValido, _colorValido, 1399.99m, 2, "Compra válida de Galaxy S24 Ultra")

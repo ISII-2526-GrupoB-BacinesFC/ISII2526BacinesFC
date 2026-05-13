@@ -97,7 +97,7 @@ namespace AppForSEII2526.API.Controllers
             // Crear la compra (sin ItemsCompra inicialmente)
             var purchase = new Purchase(
                 purchaseForCreate.PaymentMethod,
-                purchaseForCreate.PurchaseDateFrom,
+                purchaseForCreate.DateTime,
                 new List<PurchaseItem>(),
                 user
             );
