@@ -2,14 +2,13 @@
 {
     public class purchaseForCreateDTO
     {
-        public purchaseForCreateDTO(string customerUserName, string customerNameSurname, string deliveryAddress, PaymentMethodTypes paymentMethod, DateTime purchaseDateFrom, DateTime purchaseDateTo, IList<purchaseItemDTO> purchaseItems)
+        public purchaseForCreateDTO(string customerUserName, string customerNameSurname, string deliveryAddress, PaymentMethodTypes paymentMethod, int quantity, IList<purchaseItemDTO> purchaseItems)
         {
             CustomerUserName = customerUserName ?? throw new ArgumentNullException(nameof(customerUserName));
             CustomerNameSurname = customerNameSurname ?? throw new ArgumentNullException(nameof(customerNameSurname));
             DeliveryAddress = deliveryAddress ?? throw new ArgumentNullException(nameof(deliveryAddress));
             PaymentMethod = paymentMethod;
-            PurchaseDateFrom = purchaseDateFrom;
-            PurchaseDateTo = purchaseDateTo;
+            Quantity = quantity;
             PurchaseItems = purchaseItems ?? throw new ArgumentNullException(nameof(purchaseItems));
         }
 
@@ -17,10 +16,6 @@
         {
             PurchaseItems = new List<purchaseItemDTO>();
         }
-
-        public DateTime PurchaseDateFrom { get; set; }
-
-        public DateTime PurchaseDateTo { get; set; }
 
 
         [DataType(System.ComponentModel.DataAnnotations.DataType.MultilineText)]
@@ -41,41 +36,22 @@
         [Required]
         public PaymentMethodTypes PaymentMethod { get; set; }
 
-        private int NumberOfDays
-        {
-            get
-            {
-                return (PurchaseDateTo - PurchaseDateFrom).Days;
-            }
-        }
+        public int Quantity { get; set; }
 
-        [Display(Name = "Total Price")]
-        [JsonPropertyName("TotalPrice")]
-        [Precision(10, 2)]
-        public decimal TotalPrice
+        public DateTime DateTime
         {
-            get
-            {
-                return PurchaseItems.Sum(ri => ri.Price * NumberOfDays);
-            }
-        }
-
-        protected bool CompareDate(DateTime date1, DateTime date2)
-        {
-            return (date1.Subtract(date2) < new TimeSpan(0, 1, 0));
+            get { return DateTime.Now; }
         }
 
         public override bool Equals(object? obj)
         {
-            return obj is purchaseForCreateDTO dTO &&
-                   CompareDate(PurchaseDateFrom, dTO.PurchaseDateFrom) &&
-                   CompareDate(PurchaseDateTo, dTO.PurchaseDateTo) &&
-                   DeliveryAddress == dTO.DeliveryAddress &&
-                   CustomerUserName == dTO.CustomerUserName &&
-                   CustomerNameSurname == dTO.CustomerNameSurname &&
-                   PurchaseItems.SequenceEqual(dTO.PurchaseItems) &&
-                   PaymentMethod == dTO.PaymentMethod &&
-                   TotalPrice == dTO.TotalPrice;
+            return obj is purchaseForCreateDTO dto &&
+                   CustomerUserName == dto.CustomerUserName &&
+                   CustomerNameSurname == dto.CustomerNameSurname &&
+                   DeliveryAddress == dto.DeliveryAddress &&
+                   PaymentMethod == dto.PaymentMethod &&
+                   Quantity == dto.Quantity &&
+                   PurchaseItems.SequenceEqual(dto.PurchaseItems);
         }
     }
 }

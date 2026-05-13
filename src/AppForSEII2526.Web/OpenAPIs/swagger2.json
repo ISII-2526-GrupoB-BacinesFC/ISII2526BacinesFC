@@ -469,14 +469,6 @@
         ],
         "type": "object",
         "properties": {
-          "purchaseDateFrom": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "purchaseDateTo": {
-            "type": "string",
-            "format": "date-time"
-          },
           "deliveryAddress": {
             "maxLength": 50,
             "minLength": 10,
@@ -503,9 +495,13 @@
           "paymentMethod": {
             "$ref": "#/components/schemas/PaymentMethodTypes"
           },
-          "TotalPrice": {
-            "type": "number",
-            "format": "double",
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "dateTime": {
+            "type": "string",
+            "format": "date-time",
             "readOnly": true
           }
         },
