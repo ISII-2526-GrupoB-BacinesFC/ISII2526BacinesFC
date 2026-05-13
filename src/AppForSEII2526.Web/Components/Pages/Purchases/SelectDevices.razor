@@ -1,0 +1,192 @@
+﻿@page "/Purchases/SelectDevices"
+@using AppForSEII2526.Web.API
+@using AppForSEII2526.Web
+@inject AppForSEII2526APIClient ApiClient
+@inject PurchasesStateContainer CompraState
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Catálogo de Móviles</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-phone"></i> Catálogo de Dispositivos</h2>
+            </div>
+
+            <div class="card mb-4 bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">Filtrar búsqueda</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Nombre (ej. iPhone)..."
+                                   @bind="filtroNombre" />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" placeholder="Color (ej. Negro)..."
+                                   @bind="filtroColor" />
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-primary w-100" @onclick="CargarDispositivos">
+                                <i class="bi bi-search"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (dispositivos == null)
+            {
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-2">Cargando catálogo desde Azure...</p>
+                </div>
+            }
+            else if (!dispositivos.Any())
+            {
+                <div class="alert alert-warning d-flex align-items-center">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <div>No se han encontrado dispositivos con esos filtros.</div>
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-md-2 g-4">
+                    @foreach (var movil in dispositivos)
+                    {
+                        <div class="col">
+                            <div class="card h-100 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">@movil.NameDevice</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">@movil.Brand</h6>
+
+                                    <div class="mb-2">
+                                        <span class="badge bg-secondary">@movil.Color</span>
+                                        <span class="badge bg-info text-dark">@movil.Model?.Name</span>
+                                    </div>
+
+                                    <h3 class="text-primary text-end mt-3">
+                                        @movil.PriceForPurchase.ToString("C2")
+                                    </h3>
+                                </div>
+                                <div class="card-footer bg-white border-top-0 pb-3">
+                                    <button class="btn btn-outline-primary w-100"
+                                            @onclick="() => Agregar(movil)">
+                                        <i class="bi bi-cart-plus"></i> Añadir al Carrito
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="col-md-4">
+            <div class="card border-primary sticky-top" style="top: 20px; z-index: 100;">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-cart"></i> Mi Cesta
+                </div>
+                <div class="card-body p-0">
+                    @if (CompraState.Purchase.PurchaseItems.Any())
+                    {
+                        <ul class="list-group list-group-flush" style="max-height: 400px; overflow-y: auto;">
+                            @foreach (var item in CompraState.Purchase.PurchaseItems)
+                            {
+                                <li class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <strong>@item.Brand @item.Model</strong>
+                                            <div class="text-muted small">@item.Color</div>
+                                            <div class="fw-bold">@((item.Price * item.Quantity).ToString("C2"))</div>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger btn-remove"
+                                                @onclick="() => CompraState.QuitarItemParaComprar(item)"
+                                                title="Eliminar del carrito">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <div class="p-3 text-center text-muted">
+                            <i class="bi bi-cart-x fs-1"></i>
+                            <p>Tu carrito está vacío</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Artículos:</span>
+                        <strong>@CompraState.Purchase.Quantity</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="h5">Total:</span>
+                        <strong class="h5 text-primary">@CompraState.TotalPrice.ToString("C2")</strong>
+                    </div>
+
+                    @if (CompraState.Purchase.Quantity > 0)
+                    {
+                        <button class="btn btn-success w-100 mb-2" @onclick="IrAlCheckout">
+                            Tramitar Pedido <i class="bi bi-arrow-right"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm w-100" @onclick="CompraState.EliminarCarrito">
+                            Vaciar Todo
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ICollection<DeviceForPurchaseDTO>? dispositivos;
+    private string? filtroNombre;
+    private string? filtroColor;
+
+    protected override async Task OnInitializedAsync()
+    {
+        CompraState.OnStateChange += StateHasChanged;
+        await CargarDispositivos();
+    }
+
+    private async Task CargarDispositivos()
+    {
+        try
+        {
+            dispositivos = await ApiClient.GetDispositivosParaComprarAsync(filtroNombre, filtroColor);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cargando API: {ex.Message}");
+            dispositivos = new List<DeviceForPurchaseDTO>();
+        }
+    }
+
+    private void Agregar(DeviceForPurchaseDTO dispositivo)
+    {
+        CompraState.AñadirDispositivo(dispositivo);
+    }
+
+
+    private void EliminarItem(PurchaseItemDTO item)
+    {
+        CompraState.QuitarItemParaComprar(item);
+    }
+
+    private void IrAlCheckout()
+    {
+        Navigation.NavigateTo("/Compras/CrearCompra");
+    }
+
+    public void Dispose()
+    {
+        CompraState.OnStateChange -= StateHasChanged;
+    }
+}
