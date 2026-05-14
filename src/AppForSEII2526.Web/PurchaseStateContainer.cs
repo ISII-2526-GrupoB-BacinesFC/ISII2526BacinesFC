@@ -38,37 +38,37 @@ namespace AppForSEII2526.Web
         }
 
         public void AñadirDispositivo(DeviceForPurchaseDTO dispositivo)
+{
+    // Buscamos si ya existe (usando los mismos criterios que usa tu DTO)
+    var itemExistente = Purchase.PurchaseItems.FirstOrDefault(ic =>
+        ic.Brand == dispositivo.Brand &&
+        ic.Model == (dispositivo.Model?.Name ?? "Sin Modelo") &&
+        ic.Color == dispositivo.Color
+    );
+
+    if (itemExistente != null)
+    {
+        itemExistente.Quantity++;
+    }
+    else
+    {
+        // Creamos el ítem asegurándonos de que NADA sea nulo
+        var nuevoItem = new PurchaseItemDTO // Usa el nombre exacto de tu clase
         {
+            Brand = dispositivo.Brand ?? "Desconocida",
+            Model = dispositivo.Model?.Name ?? dispositivo.NameDevice ?? "Genérico",
+            Color = dispositivo.Color ?? "N/A",
+            Price = dispositivo.PriceForPurchase,
+            Quantity = 1,
+            Description = "Compra realizada desde la web"
+        };
 
-            var itemExistente = Purchase.PurchaseItems.FirstOrDefault(ic =>
-                ic.Brand == dispositivo.Brand &&
-                ic.Model == dispositivo.Model.Name &&
-                ic.Color == dispositivo.Color
-            );
+        Purchase.PurchaseItems.Add(nuevoItem);
+    }
 
-            if (itemExistente != null)
-            {
-                itemExistente.Quantity++;
-            }
-            else
-            {
-
-                var nuevoItem = new PurchaseItemDTO
-                {
-                    Brand = dispositivo.Brand,
-                    Model = dispositivo.Model.Name,
-                    Color = dispositivo.Color,
-                    Price = dispositivo.PriceForPurchase,
-                    Quantity = 1,
-                    Description = "Compra Web"
-                };
-
-                Purchase.PurchaseItems.Add(nuevoItem);
-            }
-
-            ActualizarTotales();
-            NotifyStateChanged();
-        }
+    ActualizarTotales();
+    NotifyStateChanged();
+}
 
         public void EliminarCarrito()
         {

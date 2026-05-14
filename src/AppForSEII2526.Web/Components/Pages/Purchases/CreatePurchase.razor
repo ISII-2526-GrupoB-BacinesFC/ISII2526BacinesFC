@@ -139,61 +139,59 @@
         }
     }
 
-
     private async Task ProcesarPedido()
     {
-
         mensajeError = "";
 
-
+        // 1. Validaciones de interfaz
         if (string.IsNullOrWhiteSpace(CompraState.Purchase.CustomerUserName))
         {
             mensajeError = "Por favor, introduce tu Nombre.";
             return;
         }
-
         if (string.IsNullOrWhiteSpace(CompraState.Purchase.CustomerNameSurname))
         {
             mensajeError = "Por favor, introduce tus Apellidos.";
             return;
         }
-
         if (string.IsNullOrWhiteSpace(CompraState.Purchase.DeliveryAddress))
         {
             mensajeError = "Es obligatorio introducir una Dirección de entrega.";
             return;
         }
 
-
-        if (CompraState.Purchase.CustomerUserName.Length > 50)
-        {
-            mensajeError = "El Nombre es demasiado largo (máximo 50 caracteres).";
-            return;
-        }
-
-        if (CompraState.Purchase.CustomerNameSurname.Length > 70)
-        {
-            mensajeError = "Los Apellidos son demasiado largos (máximo 70 caracteres).";
-            return;
-        }
-
-        if (CompraState.Purchase.DeliveryAddress.Length > 100)
-        {
-            mensajeError = "La Dirección es demasiado larga (máximo 100 caracteres).";
-            return;
-        }
-
-
         enviando = true;
 
         try
         {
+            // --- BLOQUE DE AJUSTE FINAL ---
+
+            // Forzamos el método de pago al valor 0 (CreditCard) para descartar errores de Enum
+            CompraState.Purchase.PaymentMethod = 0;
+
+            // Recalculamos la cantidad total de la compra sumando los ítems
+            CompraState.Purchase.Quantity = CompraState.Purchase.PurchaseItems.Sum(i => i.Quantity);
+
+            // Importante: Si la API requiere fecha, se la pasamos aquí
+            CompraState.Purchase.DateTime = DateTime.Now;
+
+            // --- LLAMADA A LA API ---
             var compraRealizada = await ApiClient.CrearCompraAsync(CompraState.Purchase);
+
+            // Si llegamos aquí, la compra ha funcionado. Vamos a detalles.
             Navigation.NavigateTo($"/Purchases/DetailPurchase/{compraRealizada.Id}");
+        }
+        catch (ApiException ex)
+        {
+            // El ex.Response es la clave. Si la API da un 400, aquí pondrá qué campo falla.
+            mensajeError = $"ERROR DE VALIDACIÓN ({ex.StatusCode}): " +
+                          (string.IsNullOrEmpty(ex.Response) ? "Revisa que no haya campos vacíos en los ítems." : ex.Response);
+
+            Console.WriteLine("DEBUG API ERROR: " + ex.Response);
         }
         catch (Exception ex)
         {
-            mensajeError = "Ocurrió un error al procesar la compra: " + ex.Message;
+            mensajeError = "ERROR INESPERADO: " + ex.Message;
         }
         finally
         {

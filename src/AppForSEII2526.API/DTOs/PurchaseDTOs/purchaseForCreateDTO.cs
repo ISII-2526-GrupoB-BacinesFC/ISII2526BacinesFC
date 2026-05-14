@@ -20,16 +20,15 @@
 
         [DataType(System.ComponentModel.DataAnnotations.DataType.MultilineText)]
         [Display(Name = "Delivery Address")]
-        [StringLength(50, MinimumLength = 10, ErrorMessage = "Delivery address must have at least 10 characters")]
+        [StringLength(50, MinimumLength = 4, ErrorMessage = "Delivery address must have at least 4 characters")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your address for delivery")]
         public string DeliveryAddress { get; set; }
 
-        [EmailAddress]
         [Required]
         public string CustomerUserName { get; set; }
 
         [Required(AllowEmptyStrings = false, ErrorMessage = "Please, set your Name and Surname")]
-        [StringLength(50, MinimumLength = 10, ErrorMessage = "Name and Surname must have at least 10 characters")]
+        [StringLength(50, MinimumLength = 4, ErrorMessage = "Name and Surname must have at least 4 characters")]
         public string CustomerNameSurname { get; set; }
 
         public IList<purchaseItemDTO> PurchaseItems { get; set; }

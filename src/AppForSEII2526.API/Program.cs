@@ -5,13 +5,24 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+// En el Program.cs de tu proyecto .API
 builder.Services.AddControllers()
-    .AddJsonOptions(options => {
-        // Esto ya lo tenías (para que los Enums se vean como texto)
+    .AddJsonOptions(options =>
+    {
+        // 1. Para que los Enums se entiendan como texto
         options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 
-        // ESTO ES LO NUEVO: Evita el error de "Object cycle detected"
+        // 2. LA CLAVE: Usamos camelCase (estándar) pero activamos la INSENSIBILIDAD a mayúsculas
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+
+        // 3. Para evitar errores de bucles infinitos en la base de datos
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Esto nos permite seguir viendo los detalles del error si algo fallara
+        options.SuppressModelStateInvalidFilter = false;
     });
 
 // Add service for managing a sqlserver database that will be managed using ApplicationDBContext

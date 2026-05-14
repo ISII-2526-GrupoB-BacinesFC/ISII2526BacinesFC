@@ -223,47 +223,47 @@
     "schemas": {
       "Device": {
         "required": [
-          "brand",
-          "color",
-          "model",
-          "name",
-          "priceForPurchase",
-          "quantityForPurchase",
-          "year"
+          "Brand",
+          "Color",
+          "Model",
+          "Name",
+          "PriceForPurchase",
+          "QuantityForPurchase",
+          "Year"
         ],
         "type": "object",
         "properties": {
-          "id": {
+          "Id": {
             "type": "integer",
             "format": "int32"
           },
-          "model": {
+          "Model": {
             "$ref": "#/components/schemas/Model"
           },
-          "brand": {
+          "Brand": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string"
           },
-          "color": {
+          "Color": {
             "maxLength": 30,
             "minLength": 0,
             "type": "string"
           },
-          "name": {
+          "Name": {
             "maxLength": 100,
             "minLength": 0,
             "type": "string"
           },
-          "priceForPurchase": {
+          "PriceForPurchase": {
             "type": "number",
             "format": "double"
           },
-          "quantityForPurchase": {
+          "QuantityForPurchase": {
             "type": "integer",
             "format": "int32"
           },
-          "year": {
+          "Year": {
             "type": "integer",
             "format": "int32"
           }
@@ -272,37 +272,37 @@
       },
       "DeviceForPurchaseDTO": {
         "required": [
-          "brand",
-          "color",
-          "model",
-          "nameDevice",
-          "priceForPurchase"
+          "Brand",
+          "Color",
+          "Model",
+          "NameDevice",
+          "PriceForPurchase"
         ],
         "type": "object",
         "properties": {
-          "id": {
+          "Id": {
             "type": "integer",
             "format": "int32"
           },
-          "nameDevice": {
+          "NameDevice": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string"
           },
-          "brand": {
+          "Brand": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string"
           },
-          "model": {
+          "Model": {
             "$ref": "#/components/schemas/Model"
           },
-          "color": {
+          "Color": {
             "maxLength": 20,
             "minLength": 0,
             "type": "string"
           },
-          "priceForPurchase": {
+          "PriceForPurchase": {
             "minimum": 0.5,
             "type": "number",
             "format": "currency"
@@ -313,17 +313,17 @@
       "Model": {
         "type": "object",
         "properties": {
-          "id": {
+          "Id": {
             "type": "integer",
             "format": "int32"
           },
-          "name": {
+          "Name": {
             "maxLength": 50,
             "minLength": 4,
             "type": "string",
             "nullable": true
           },
-          "devices": {
+          "Devices": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Device"
@@ -407,14 +407,14 @@
       },
       "purchaseDetailDTO": {
         "required": [
-          "deliveryAddress",
-          "purchaseDateFrom",
-          "totalPrice",
-          "totalQuantity"
+          "DeliveryAddress",
+          "PurchaseDateFrom",
+          "TotalPrice",
+          "TotalQuantity"
         ],
         "type": "object",
         "properties": {
-          "id": {
+          "Id": {
             "type": "integer",
             "format": "int32"
           },
@@ -430,27 +430,27 @@
             "type": "string",
             "nullable": true
           },
-          "deliveryAddress": {
+          "DeliveryAddress": {
             "maxLength": 100,
             "minLength": 0,
             "type": "string"
           },
-          "purchaseDateFrom": {
+          "PurchaseDateFrom": {
             "type": "string",
             "format": "date"
           },
-          "totalPrice": {
+          "TotalPrice": {
             "minimum": 0.5,
             "type": "number",
             "format": "currency"
           },
-          "totalQuantity": {
+          "TotalQuantity": {
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
             "format": "currency"
           },
-          "purchaseItems": {
+          "PurchaseItems": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/purchaseItemDTO"
@@ -462,44 +462,43 @@
       },
       "purchaseForCreateDTO": {
         "required": [
-          "customerNameSurname",
-          "customerUserName",
-          "deliveryAddress",
-          "paymentMethod"
+          "CustomerNameSurname",
+          "CustomerUserName",
+          "DeliveryAddress",
+          "PaymentMethod"
         ],
         "type": "object",
         "properties": {
-          "deliveryAddress": {
+          "DeliveryAddress": {
             "maxLength": 50,
-            "minLength": 10,
+            "minLength": 4,
             "type": "string",
             "format": "multiline"
           },
-          "customerUserName": {
+          "CustomerUserName": {
             "minLength": 1,
-            "type": "string",
-            "format": "email"
-          },
-          "customerNameSurname": {
-            "maxLength": 50,
-            "minLength": 10,
             "type": "string"
           },
-          "purchaseItems": {
+          "CustomerNameSurname": {
+            "maxLength": 50,
+            "minLength": 4,
+            "type": "string"
+          },
+          "PurchaseItems": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/purchaseItemDTO"
             },
             "nullable": true
           },
-          "paymentMethod": {
+          "PaymentMethod": {
             "$ref": "#/components/schemas/PaymentMethodTypes"
           },
-          "quantity": {
+          "Quantity": {
             "type": "integer",
             "format": "int32"
           },
-          "dateTime": {
+          "DateTime": {
             "type": "string",
             "format": "date-time",
             "readOnly": true
@@ -510,34 +509,34 @@
       "purchaseItemDTO": {
         "type": "object",
         "properties": {
-          "brand": {
+          "Brand": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string",
             "nullable": true
           },
-          "model": {
+          "Model": {
             "type": "string",
             "nullable": true
           },
-          "color": {
+          "Color": {
             "maxLength": 20,
             "minLength": 1,
             "type": "string",
             "nullable": true
           },
-          "price": {
+          "Price": {
             "minimum": 0.5,
             "type": "number",
             "format": "currency"
           },
-          "description": {
+          "Description": {
             "maxLength": 150,
             "minLength": 0,
             "type": "string",
             "nullable": true
           },
-          "quantity": {
+          "Quantity": {
             "maximum": 2147483647,
             "minimum": 1,
             "type": "integer",
