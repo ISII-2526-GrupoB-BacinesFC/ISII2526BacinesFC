@@ -9,7 +9,7 @@ public class ApplicationUser : IdentityUser
     public ApplicationUser()
     {
     }
-    public ApplicationUser(string id, string surname, string userName, string deliveryAddress, string email)
+    public ApplicationUser(string id, string? surname, string userName, string? deliveryAddress, string email)
     {
         Id = id;
         Surname = surname;
@@ -25,9 +25,9 @@ public class ApplicationUser : IdentityUser
         set;
     }
 
-    [Required]
+    
     [StringLength(100, ErrorMessage = "La direccion no puede ser superior a 100 carecteres")]
-    public string DeliveryAddress { get; set; }
+    public string? DeliveryAddress { get; set; }
 
     [Display(Name = "Surname")]
     public string? Surname

@@ -1,0 +1,203 @@
+﻿@page "/Purchases/CreatePurchase"
+@using System.Net
+@using AppForSEII2526.Web.API
+@using AppForSEII2526.Web
+@inject PurchasesStateContainer CompraState
+@inject AppForSEII2526APIClient ApiClient
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Finalizar Compra</PageTitle>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-7">
+
+
+            @if (!string.IsNullOrEmpty(mensajeError))
+            {
+                <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                    <div>
+                        <strong>Atención:</strong> @mensajeError
+                    </div>
+                </div>
+            }
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0"><i class="bi bi-person-lines-fill"></i> Datos de Envío</h4>
+                </div>
+                <div class="card-body">
+
+
+                    <EditForm Model="CompraState.Purchase" OnSubmit="ProcesarPedido">
+
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label">Nombre *</label>
+                                <InputText id="InputNombre" @bind-Value="CompraState.Purchase.CustomerUserName" class="form-control" placeholder="Ej. Juan" />
+                            </div>
+
+                            <div class="col-sm-6">
+                                <label class="form-label">Apellidos *</label>
+                                <InputText id="InputApellidos" @bind-Value="CompraState.Purchase.CustomerNameSurname" class="form-control" placeholder="Ej. Pérez" />
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label">Dirección de Entrega *</label>
+                                <InputText id="InputDireccion" @bind-Value="CompraState.Purchase.DeliveryAddress" class="form-control" placeholder="Calle, número, ciudad..." />
+                            </div>
+
+
+                            <div class="col-12">
+                                <label class="form-label">Método de Pago *</label>
+                                <InputSelect id="InputPago" @bind-Value="CompraState.Purchase.PaymentMethod" class="form-select">
+                                    @foreach (var metodo in Enum.GetValues(typeof(PaymentMethodTypes)))
+                                    {
+                                        <option value="@metodo">@metodo</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex gap-2">
+                            <a href="/Purchases/SelectDevices" class="btn btn-secondary w-50 btn-lg">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </a>
+
+                            <button class="btn btn-success w-50 btn-lg" type="submit" disabled="@enviando">
+                                @if (enviando)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span> Procesando...</span>
+                                }
+                                else
+                                {
+                                    <span><i class="bi bi-check-circle"></i> Confirmar</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-cart3"></i> Tu Pedido</h4>
+                </div>
+                <div class="card-body">
+                    @if (CompraState.Purchase.PurchaseItems == null || !CompraState.Purchase.PurchaseItems.Any())
+                    {
+                        <div class="alert alert-warning">Tu carrito está vacío.</div>
+                    }
+                    else
+                    {
+                        <ul class="list-group list-group-flush mb-3">
+                            @foreach (var item in CompraState.Purchase.PurchaseItems)
+                            {
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between lh-sm">
+                                        <div>
+                                            <h6 class="my-0">@item.Brand @item.Model</h6>
+                                            <small class="text-muted">@item.Color (x @item.Quantity)</small>
+                                            <div class="col-12">
+                                                <label class="form-label">Descripcion*</label>
+                                                <InputText id="descripcion" @bind-Value="item.Description" class="form-control" placeholder="Compra web..." />
+                                            </div>
+                                        </div>
+                                        <span class="text-muted">@((item.Price * item.Quantity).ToString("C2"))</span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                        <div class="d-flex justify-content-between p-3 bg-light rounded">
+                            <span class="h5">Total (EUR)</span>
+                            <strong class="h4">@CompraState.TotalPrice.ToString("C2")</strong>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool enviando = false;
+    private string mensajeError = "";
+
+    protected override void OnInitialized()
+    {
+        // Si el carrito está vacio se redirige al paso anterior
+        if (CompraState.Purchase.PurchaseItems == null || !CompraState.Purchase.PurchaseItems.Any())
+        {
+            Navigation.NavigateTo("/Purchases/SelectDevices");
+        }
+    }
+
+
+    private async Task ProcesarPedido()
+    {
+
+        mensajeError = "";
+
+
+        if (string.IsNullOrWhiteSpace(CompraState.Purchase.CustomerUserName))
+        {
+            mensajeError = "Por favor, introduce tu Nombre.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CompraState.Purchase.CustomerNameSurname))
+        {
+            mensajeError = "Por favor, introduce tus Apellidos.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CompraState.Purchase.DeliveryAddress))
+        {
+            mensajeError = "Es obligatorio introducir una Dirección de entrega.";
+            return;
+        }
+
+
+        if (CompraState.Purchase.CustomerUserName.Length > 50)
+        {
+            mensajeError = "El Nombre es demasiado largo (máximo 50 caracteres).";
+            return;
+        }
+
+        if (CompraState.Purchase.CustomerNameSurname.Length > 70)
+        {
+            mensajeError = "Los Apellidos son demasiado largos (máximo 70 caracteres).";
+            return;
+        }
+
+        if (CompraState.Purchase.DeliveryAddress.Length > 100)
+        {
+            mensajeError = "La Dirección es demasiado larga (máximo 100 caracteres).";
+            return;
+        }
+
+
+        enviando = true;
+
+        try
+        {
+            var compraRealizada = await ApiClient.CrearCompraAsync(CompraState.Purchase);
+            Navigation.NavigateTo($"/Purchases/DetailPurchase/{compraRealizada.Id}");
+        }
+        catch (Exception ex)
+        {
+            mensajeError = "Ocurrió un error al procesar la compra: " + ex.Message;
+        }
+        finally
+        {
+            enviando = false;
+        }
+    }
+}
