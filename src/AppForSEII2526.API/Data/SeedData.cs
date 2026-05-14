@@ -63,16 +63,37 @@ namespace AppForSEII2526.API.Data
 
         public static void SeedUsers(UserManager<ApplicationUser> userManager, List<string> roles)
         {
-            if (userManager.FindByNameAsync("elena@uclm.es").Result == null)
+            string email = "elena@uclm.es";
+            if (userManager.FindByNameAsync(email).Result == null)
             {
-                ApplicationUser user = new ApplicationUser("1", "Elena", "Navarro Martínez", "Avda. España 2, Albacete", "elena@uclm.es");
-                user.EmailConfirmed = true;
+                // 1. Quitamos el "1" del constructor para que no choque con el ID
+                ApplicationUser user = new ApplicationUser
+                {
+                    UserName = email,
+                    Email = email,
+                    Name = "Elena",
+                    Surname = "Navarro Martínez",
+                    DeliveryAddress = "Avda. España 2, Albacete",
+                    EmailConfirmed = true
+                };
 
+                // 2. Intentamos crearla
                 var result = userManager.CreateAsync(user, "Password1234%").Result;
-
+                
                 if (result.Succeeded)
                 {
                     userManager.AddToRoleAsync(user, roles[0]).Wait();
+                    // Esto saldrá en la consola negra
+                    Console.WriteLine("✅ Elena creada con éxito.");
+                }
+                else
+                {
+                    // 3. SI FALLA, ESTO NOS DIRÁ POR QUÉ (Míralo en la consola de VS)
+                    Console.WriteLine("❌ ERROR AL CREAR A ELENA:");
+                    foreach (var error in result.Errors)
+                    {
+                        Console.WriteLine($"- {error.Code}: {error.Description}");
+                    }
                 }
             }
         }
