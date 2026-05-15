@@ -1,41 +1,25 @@
-﻿using OpenQA.Selenium.Chrome;
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
-
+using Xunit.Abstractions;
 
 namespace AppForSEII2526.UIT.Shared
 {
     public class UC_UIT : IDisposable
     {
-
-        private bool _pipeline = false;
-
-        //establish which browser you would like to use
-        //private string _browser = "Chrome";
-        //private string _browser = "Firefox";
-        private string _browser = "Edge";
+        // Cambia a true si quieres que el navegador no se abra físicamente (segundo plano)
+        private readonly bool _pipeline = false;
+        private readonly string _browser = "Edge";
 
         protected IWebDriver _driver;
         protected readonly ITestOutputHelper _output;
 
-
-
-
-        public string _URI
-        {
-            get
-            {
-                //set url of your web page 
-                return "https://localhost:7081/";
-
-            }
-        }
-
+        // URL base de tu aplicación
+        public string _URI => "https://localhost:7081/";
 
         public UC_UIT(ITestOutputHelper output)
         {
-
-            //it initializes where the errors will be shown
             _output = output;
 
             switch (_browser)
@@ -47,102 +31,75 @@ namespace AppForSEII2526.UIT.Shared
                     SetUp_EdgeFor4UIT();
                     break;
                 default:
-                    //by default Chrome will be used
                     SetUp_Chrome4UIT();
                     break;
             }
-            //Added to make _Driver wait when an element is not found.
-            //It will wait for a maximum of 50 seconds.
 
-            //maximize the window browser
+            // === CONFIGURACIÓN DE ESPERAS ===
+            // Espera hasta 10 segundos a que los elementos aparezcan antes de dar error
+            _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+
+            // Maximizar para asegurar que los botones son visibles
             _driver.Manage().Window.Maximize();
         }
 
-
         protected void Initial_step_opening_the_web_page()
         {
-            _driver.Navigate()
-                .GoToUrl(_URI);
+            _driver.Navigate().GoToUrl(_URI);
         }
 
         protected void Perform_login(string email, string password)
         {
-            _driver.Navigate()
-                    .GoToUrl(_URI + "Account/Login");
-            // _driver.FindElement(By.Id("Input_Email"))
-            //     .SendKeys("elena.navarro@uclm.es");
-            _driver.FindElement(By.Name("Input.Email"))
-                .SendKeys(email);
+            _driver.Navigate().GoToUrl(_URI + "Account/Login");
 
-            _driver.FindElement(By.Name("Input.Password"))
-                .SendKeys(password);
+            // Localizadores limpios por Nombre (más estables que XPath)
+            _driver.FindElement(By.Name("Input.Email")).SendKeys(email);
+            _driver.FindElement(By.Name("Input.Password")).SendKeys(password);
 
-            _driver.FindElement(By.XPath("/html/body/div[1]/main/article/div/div[1]/section/form/div[4]/button"))
-                .Click();
+            // Click en el botón de Login (si el XPath cambia, fallará; mejor usar ID si el botón lo tiene)
+            _driver.FindElement(By.XPath("//button[@type='submit']")).Click();
         }
-
 
         protected void SetUp_Chrome4UIT()
         {
-            var optionsc = new ChromeOptions
-            {
-                PageLoadStrategy = PageLoadStrategy.Normal,
-                AcceptInsecureCertificates = true
-            };
-            //For pipelines use this option for hiding the browser
-            if (_pipeline) optionsc.AddArgument("--headless");
-
-            _driver = new ChromeDriver(optionsc);
-
+            var options = new ChromeOptions { AcceptInsecureCertificates = true };
+            if (_pipeline) options.AddArgument("--headless");
+            _driver = new ChromeDriver(options);
         }
 
         protected void SetUp_FireFox4UIT()
         {
-            var optionsff = new FirefoxOptions
-            {
-                PageLoadStrategy = PageLoadStrategy.Normal,
-                AcceptInsecureCertificates = true
-            };
-            //For pipelines use this option for hiding the browser
-            if (_pipeline) optionsff.AddArgument("--headless");
-
-            _driver = new FirefoxDriver(optionsff);
-
+            var options = new FirefoxOptions { AcceptInsecureCertificates = true };
+            if (_pipeline) options.AddArgument("--headless");
+            _driver = new FirefoxDriver(options);
         }
 
         protected void SetUp_EdgeFor4UIT()
         {
-            var optionsEdge = new EdgeOptions
+            var options = new EdgeOptions
             {
                 PageLoadStrategy = PageLoadStrategy.Normal,
                 AcceptInsecureCertificates = true
             };
 
+            // Detectar si estamos en el servidor (CI) o en local
+            bool isServer = _pipeline || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
 
-            bool isServerEnvironment = _pipeline || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("CI"));
-
-            if (isServerEnvironment)
+            if (isServer)
             {
-
-                optionsEdge.AddArgument("--headless=new");
-                optionsEdge.AddArgument("--no-sandbox");
-                optionsEdge.AddArgument("--disable-dev-shm-usage");
-                optionsEdge.AddArgument("--window-size=1920,1080");
-                optionsEdge.AddArgument("--ignore-certificate-errors");
-            }
-            else
-            {
-
-                optionsEdge.AddArgument("--start-maximized");
+                options.AddArgument("--headless=new");
+                options.AddArgument("--no-sandbox");
+                options.AddArgument("--disable-dev-shm-usage");
             }
 
-            _driver = new EdgeDriver(optionsEdge);
+            _driver = new EdgeDriver(options);
         }
 
         public void Dispose()
         {
-            _driver.Close();
-            _driver.Dispose();
+            // Quit cierra todas las ventanas y mata el proceso del driver
+            _driver?.Quit();
+            _driver?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
