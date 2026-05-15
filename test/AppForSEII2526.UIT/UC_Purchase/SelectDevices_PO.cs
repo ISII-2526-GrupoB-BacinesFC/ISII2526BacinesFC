@@ -7,7 +7,7 @@ using Xunit.Abstractions;
 
 namespace AppForSEII2526.UIT.UC_Purchase
 {
-    public class SelectDevicesPurchase_PO : PageObject
+    public class SelectDevices_PO : PageObject
     {
         private By inputFiltroNombre = By.CssSelector("input[placeholder*='Nombre']");
         private By inputFiltroColor = By.CssSelector("input[placeholder*='Color']");
@@ -19,7 +19,7 @@ namespace AppForSEII2526.UIT.UC_Purchase
 
 
         private IWebElement _rentButton() => _driver.FindElement(btnTramitar);
-        public SelectDevicesPurchase_PO(IWebDriver driver, ITestOutputHelper output) : base(driver, output)
+        public SelectDevices_PO(IWebDriver driver, ITestOutputHelper output) : base(driver, output)
         {
         }
 

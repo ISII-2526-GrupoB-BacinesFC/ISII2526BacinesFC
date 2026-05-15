@@ -50,14 +50,28 @@ namespace AppForSEII2526.UIT.Shared
 
         protected void Perform_login(string email, string password)
         {
-            _driver.Navigate().GoToUrl(_URI + "Account/Login");
+            // 1. Construir la URL de forma segura (sin dobles barras)
+            string loginUrl = $"{_URI.TrimEnd('/')}/Account/Login";
+            _driver.Navigate().GoToUrl(loginUrl);
 
-            // Localizadores limpios por Nombre (más estables que XPath)
-            _driver.FindElement(By.Name("Input.Email")).SendKeys(email);
-            _driver.FindElement(By.Name("Input.Password")).SendKeys(password);
+            // 2. ESPERA EXPLICITA: Espera hasta 10 segundos a que aparezca el campo de Email
+            var wait = new OpenQA.Selenium.Support.UI.WebDriverWait(_driver, TimeSpan.FromSeconds(10));
 
-            // Click en el botón de Login (si el XPath cambia, fallará; mejor usar ID si el botón lo tiene)
-            _driver.FindElement(By.XPath("//button[@type='submit']")).Click();
+            try
+            {
+                var emailField = wait.Until(d => d.FindElement(By.Name("Input.Email")));
+                emailField.Clear();
+                emailField.SendKeys(email);
+
+                _driver.FindElement(By.Name("Input.Password")).SendKeys(password);
+
+                // En lugar de un XPath gigante, buscamos el botón de tipo 'submit' que es más estable
+                _driver.FindElement(By.CssSelector("button[type='submit']")).Click();
+            }
+            catch (WebDriverTimeoutException)
+            {
+                throw new Exception($"❌ No se cargó la página de login en: {loginUrl}. Revisa si el puerto 7081 está abierto.");
+            }
         }
 
         protected void SetUp_Chrome4UIT()
@@ -98,8 +112,8 @@ namespace AppForSEII2526.UIT.Shared
         public void Dispose()
         {
             // Quit cierra todas las ventanas y mata el proceso del driver
-            _driver?.Quit();
-            _driver?.Dispose();
+            //_driver?.Quit();
+            //_driver?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

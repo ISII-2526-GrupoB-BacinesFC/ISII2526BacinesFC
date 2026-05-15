@@ -11,19 +11,19 @@ namespace AppForSEII2526.UIT.UC_Purchase
 {
     public class UC_Purchases_UIT : UC_UIT
     {
-        private SelectDevicesPurchase_PO _selectPO;
+        private SelectDevices_PO _selectPO;
 
 
         public UC_Purchases_UIT(ITestOutputHelper output) : base(output)
         {
-            _selectPO = new SelectDevicesPurchase_PO(_driver, _output);
+            _selectPO = new SelectDevices_PO(_driver, _output);
 
         }
 
         private void InitialStepsForCompra()
         {
 
-            _driver.Navigate().GoToUrl(_URI + "Purchase/SelectDevicesPurchase");
+            _driver.Navigate().GoToUrl(_URI + "Purchases/SelectDevices");
         }
 
         // PRUEBAS DEL SELECT DISPOSITIVOS COMPRAR
@@ -138,7 +138,7 @@ namespace AppForSEII2526.UIT.UC_Purchase
             InitialStepsForCompra();
 
             _selectPO.SearchDevices("iPhone", "");
-            _selectPO.AddDeviceToCart("iPhone 14 Pro 512GB");
+            _selectPO.AddDeviceToCart("iPhone 15 Pro Max 256GB");
             _selectPO.ProceedToCheckout();
 
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
@@ -148,8 +148,8 @@ namespace AppForSEII2526.UIT.UC_Purchase
 
             crearCompraPO.EscribirNombre("");
             crearCompraPO.EscribirApellidos("Pérez García");
-            crearCompraPO.EscribirDireccion("Calle Mayor 123, Madrid");
-            crearCompraPO.SeleccionarPago("Efectivo");
+            crearCompraPO.EscribirDireccion("Avenida Libertad 45, Barcelona");
+            crearCompraPO.SeleccionarPago("Cash");
             crearCompraPO.ClickConfirmar();
 
             // ASSERT 
