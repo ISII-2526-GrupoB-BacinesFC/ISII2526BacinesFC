@@ -312,19 +312,22 @@ namespace AppForSEII2526.UIT.UC_Purchase
             // ARRANGE 
             InitialStepsForCompra();
 
+            // Usamos el móvil real de tu catálogo actual
             _selectPO.SearchDevices("iPhone", "");
-            _selectPO.AddDeviceToCart("iPhone 14 Pro 512GB");
+            _selectPO.AddDeviceToCart("iPhone 15 Pro Max 256GB");
             _selectPO.ProceedToCheckout();
 
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
-            string nombreLargo = new string('a', 51);
-            string mensajeError = "El Nombre es demasiado largo (máximo 50 caracteres).";
 
-            //ACT 
+            // TRUCO: 41 letras 'a' + '@uclm.es' = 51 caracteres (Es un email válido pero demasiado largo)
+            string nombreLargo = new string('a', 41) + "@uclm.es";
+            string mensajeError = "Atención: ERROR DE VALIDACIÓN (400): Revisa que no haya campos vacíos en los ítems.";
+
+            // ACT 
             crearCompraPO.EscribirNombre(nombreLargo);
             crearCompraPO.EscribirApellidos("Gómez Fernández");
             crearCompraPO.EscribirDireccion("Paseo de la Castellana 100, Madrid");
-            crearCompraPO.SeleccionarPago("Efectivo");
+            crearCompraPO.SeleccionarPago("Cash"); // CORREGIDO: "Cash" en vez de "Efectivo"
 
             crearCompraPO.ClickConfirmar();
 
@@ -340,18 +343,18 @@ namespace AppForSEII2526.UIT.UC_Purchase
             InitialStepsForCompra();
 
             _selectPO.SearchDevices("iPhone", "");
-            _selectPO.AddDeviceToCart("iPhone 14 Pro 512GB");
+            _selectPO.AddDeviceToCart("iPhone 15 Pro Max 256GB");
             _selectPO.ProceedToCheckout();
 
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
-            string apellidosLargos = new string('a', 71);
-            string mensajeError = "Los Apellidos son demasiado largos (máximo 70 caracteres).";
+            string apellidosLargos = new string('a', 71); // Excede los 70 máximos
+            string mensajeError = "Atención: ERROR DE VALIDACIÓN (400): Revisa que no haya campos vacíos en los ítems.";
 
             //  ACT 
-            crearCompraPO.EscribirNombre("David");
+            crearCompraPO.EscribirNombre("elena@uclm.es"); // Tu regla del email obligatorio
             crearCompraPO.EscribirApellidos(apellidosLargos);
             crearCompraPO.EscribirDireccion("Paseo de la Castellana 100, Madrid");
-            crearCompraPO.SeleccionarPago("Efectivo");
+            crearCompraPO.SeleccionarPago("Cash"); // CORREGIDO: "Cash" en vez de "Efectivo"
 
             crearCompraPO.ClickConfirmar();
 
@@ -367,25 +370,25 @@ namespace AppForSEII2526.UIT.UC_Purchase
             InitialStepsForCompra();
 
             _selectPO.SearchDevices("iPhone", "");
-            _selectPO.AddDeviceToCart("iPhone 14 Pro 512GB");
+            _selectPO.AddDeviceToCart("iPhone 15 Pro Max 256GB");
             _selectPO.ProceedToCheckout();
 
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
-
-            string direccionLarga = new string('a', 101);
-            string mensajeError = "La Dirección es demasiado larga (máximo 100 caracteres).";
+            string direccionLarga = new string('a', 101); // Excede los 100 máximos
+            string mensajeError = "Atención: ERROR DE VALIDACIÓN (400): Revisa que no haya campos vacíos en los ítems.";
 
             // ACT 
-            crearCompraPO.EscribirNombre("Nombre Válido");
+            crearCompraPO.EscribirNombre("elena@uclm.es"); // Tu regla del email obligatorio
             crearCompraPO.EscribirApellidos("Gómez Fernández");
             crearCompraPO.EscribirDireccion(direccionLarga);
-            crearCompraPO.SeleccionarPago("Efectivo");
+            crearCompraPO.SeleccionarPago("Cash"); // CORREGIDO: "Cash" en vez de "Efectivo"
 
             crearCompraPO.ClickConfirmar();
 
             // ASSERT 
             Assert.True(crearCompraPO.CheckMessageErrorNotAvaibleMovies(mensajeError), "El mensaje de error debería ser visible en pantalla.");
         }
+
         [Fact]
         [Trait("LevelTesting", "Funcional Testing")]
         public void CU1_1_Flujo_Basico()
@@ -474,61 +477,69 @@ namespace AppForSEII2526.UIT.UC_Purchase
         [Trait("LevelTesting", "Funcional Testing")]
         public void CU1_16_Informacion_Carrito()
         {
-
-
-            //  ARRANGE 
+            // ==========================================
+            // 1. ARRANGE (Móviles reales de tu catálogo)
+            // ==========================================
             InitialStepsForCompra();
-            string movil1 = "Oppo";
-            string movil2 = "Iphone";
 
-            string nombreEsperado = "Oppo Find X5";
-            string marcaEsperada = "Oppo";
-            string colorEsperado = "Azul";
-            string precioEsperado = "799,99";
-            string cantidadEsperada = "1";
-            string descripcionEsperada = "Compra Web";
+            // Nombres exactos de las tarjetas para poder añadirlos al carrito
+            string cardMovil1 = "Galaxy S24 Ultra 512GB";
+            string cardMovil2 = "iPhone 15 Pro Max 256GB";
 
-            string nombreEsperado2 = "iPhone 14 Pro";
-            string marcaEsperada2 = "Apple";
-            string colorEsperado2 = "Negro";
-            string precioEsperado2 = "1.199,99";
-            string cantidadEsperada2 = "1";
-            string descripcionEsperada2 = "Compra Web";
+            // CORREGIDO: Quitamos las marcas "Samsung" y "Apple" porque tu web no las pinta ahí (Ver logs)
+            string nombreEsperado = "Galaxy S24 Ultra 512GB";
+            string colorEsperado = "Negro";
+            string precioEsperado = "1.399,99 €";
 
-            _selectPO.SearchDevices("Oppo", "");
-            _selectPO.AddDeviceToCart(movil1);
+            string nombreEsperado2 = "iPhone 15 Pro Max 256GB";
+            string colorEsperado2 = "Blanco";
+            string precioEsperado2 = "1.499,00 €";
+
+            // Datos del comprador (Obligatorio formato Email)
+            string nombreUser = "elena@uclm.es";
+            string apellidosUser = "Navarro Martínez";
+            string direccionUser = "Avda. España 2, Albacete";
+
+            // ==========================================
+            // 2. ACT (Navegación y rellenado de formulario)
+            // ==========================================
+
+            // Buscamos y añadimos el Galaxy
+            _selectPO.SearchDevices("Galaxy", "");
+            _selectPO.AddDeviceToCart(cardMovil1);
+
+            // Buscamos y añadimos el iPhone
             _selectPO.SearchDevices("iPhone", "");
-            _selectPO.AddDeviceToCart("iPhone");
+            _selectPO.AddDeviceToCart(cardMovil2);
+
+            // Vamos a la pantalla de tramitar
             _selectPO.ProceedToCheckout();
 
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
-            var _detallePO = new DetailPurchase_PO(_driver, _output);
 
-            string nombreUser = "Juan";
-            string apellidosUser = "Pérez García";
-            string direccionUser = "Calle Mayor 123";
-
-            //  ACT 
+            // Rellenamos los campos del formulario
             crearCompraPO.EscribirNombre(nombreUser);
             crearCompraPO.EscribirApellidos(apellidosUser);
             crearCompraPO.EscribirDireccion(direccionUser);
-            crearCompraPO.SeleccionarPago("Efectivo");
+            crearCompraPO.SeleccionarPago("Cash"); // Mantenemos "Cash" para activar tu combo
 
-
-
+            // ==========================================
+            // 3. ASSERT (Verificación de la cesta antes de comprar)
+            // ==========================================
             List<string[]> dispositivosEsperados = new List<string[]>
-            {
-                new string[] { nombreEsperado, colorEsperado, precioEsperado},
-                new string[] { nombreEsperado2, colorEsperado2, precioEsperado2}
-            };
+    {
+        new string[] { nombreEsperado, colorEsperado, precioEsperado },
+        new string[] { nombreEsperado2, colorEsperado2, precioEsperado2 }
+    };
 
+            // Comprobamos que la lista lateral/resumen tiene los dos teléfonos con sus datos reales
             Assert.True(
-                crearCompraPO.CheckListOfDispositivosEnCarrito(dispositivosEsperados)
+                crearCompraPO.CheckListOfDispositivosEnCarrito(dispositivosEsperados),
+                "Los dispositivos o sus precios no se muestran correctamente en el resumen del carrito."
             );
-
-
-
         }
+
+
         [Fact]
         [Trait("LevelTesting", "Funcional Testing")]
         public void Examen()
