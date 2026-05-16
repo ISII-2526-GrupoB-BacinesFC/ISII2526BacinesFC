@@ -135,6 +135,28 @@ namespace AppForSEII2526.UIT.Shared
 
         }
 
+        // Método para hacer clic en añadir al carrito usando el nombre del móvil
+        public void AgregarDispositivoAlCarrito(string nombreMovil)
+        {
+            // Reemplazamos los espacios tal y como hicimos en el HTML
+            string idBotón = $"btn-add-{nombreMovil.Replace(" ", "-")}";
+            By locator = By.Id(idBotón);
+
+            // Forzamos a Selenium a esperar a que el botón aparezca y se pueda clicar
+            WaitForBeingClickable(locator);
+            _driver.FindElement(locator).Click();
+        }
+
+        // Método para hacer clic en Tramitar Pedido
+        public void TramitarPedido()
+        {
+            By locator = By.Id("btn-tramitar-pedido");
+
+            // Esperamos a que el botón sea cliqueable (ya que aparece solo si hay artículos)
+            WaitForBeingClickable(locator);
+            _driver.FindElement(locator).Click();
+        }
+
         public void WaitForBeingVisibleIgnoringExeptionTypes(By IdElement)
         {
             //used whenever the webelement needs a delay for being clickable

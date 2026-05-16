@@ -37,24 +37,28 @@ namespace AppForSEII2526.UIT.Shared
 
             // === CONFIGURACIÓN DE ESPERAS ===
             // Espera hasta 10 segundos a que los elementos aparezcan antes de dar error
-            _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
-
-            // Maximizar para asegurar que los botones son visibles
-            _driver.Manage().Window.Maximize();
+            if (_driver != null)
+            {
+                _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);
+                // Maximizar para asegurar que los botones son visibles
+                _driver.Manage().Window.Maximize();
+            }
         }
 
         protected void Initial_step_opening_the_web_page()
         {
-            _driver.Navigate().GoToUrl(_URI);
+            _driver?.Navigate().GoToUrl(_URI);
         }
 
         protected void Perform_login(string email, string password)
         {
+            if (_driver == null) return;
+
             // 1. Construir la URL de forma segura (sin dobles barras)
             string loginUrl = $"{_URI.TrimEnd('/')}/Account/Login";
             _driver.Navigate().GoToUrl(loginUrl);
 
-            // 2. ESPERA EXPLICITA: Espera hasta 10 segundos a que aparezca el campo de Email
+            // 2. ESPERA EXPLÍCITA: Espera hasta 10 segundos a que aparezca el campo de Email
             var wait = new OpenQA.Selenium.Support.UI.WebDriverWait(_driver, TimeSpan.FromSeconds(10));
 
             try
@@ -111,9 +115,17 @@ namespace AppForSEII2526.UIT.Shared
 
         public void Dispose()
         {
-            // Quit cierra todas las ventanas y mata el proceso del driver
-            //_driver?.Quit();
-            //_driver?.Dispose();
+            // Libera y cierra el proceso de Edge y del Driver para que no se queden colgados en segundo plano
+            try
+            {
+                _driver?.Quit();
+                _driver?.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _output?.WriteLine($"Advertencia al cerrar el navegador: {ex.Message}");
+            }
+
             GC.SuppressFinalize(this);
         }
     }

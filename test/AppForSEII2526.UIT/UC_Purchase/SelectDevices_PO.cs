@@ -9,42 +9,76 @@ namespace AppForSEII2526.UIT.UC_Purchase
 {
     public class SelectDevices_PO : PageObject
     {
-        private By inputFiltroNombre = By.CssSelector("input[placeholder*='Nombre']");
-        private By inputFiltroColor = By.CssSelector("input[placeholder*='Color']");
-        private By buttonSearch = By.XPath("//button[contains(., 'Buscar')]");
+        // 1. SELECTORES INSENSIBLES A MAYÚSCULAS (Con la 'i' mágica)
+        // Busca el primer y segundo cuadro de texto que encuentre en la zona de filtros
+        // Buscamos el primer y segundo input que existan en la zona principal de la página, sin importar su tipo
+        // Selectores idénticos al HTML de tu pantalla de inspección
+        private By inputFiltroNombre = By.CssSelector(".card-body input[placeholder^='Nombre']");
+        private By inputFiltroColor = By.CssSelector(".card-body input[placeholder^='Color']");
+        private By buttonSearch = By.XPath("//div[contains(@class, 'card-body')]//button[contains(text(), 'Buscar')]");
+
         private By cardDispositivo = By.CssSelector(".col .card");
-        private By buttonVaciar = By.XPath("//button[contains(., 'Vaciar')]");
-        private By btnTramitar = By.XPath("//button[contains(., 'Tramitar Pedido')]");
+        private By buttonVaciar = By.XPath("//button[contains(text(), 'Vaciar')]");
+        private By btnTramitar = By.XPath("//button[contains(text(), 'Tramitar Pedido')]");
         private By alertMessage = By.CssSelector(".alert");
-
-
         private IWebElement _rentButton() => _driver.FindElement(btnTramitar);
+
         public SelectDevices_PO(IWebDriver driver, ITestOutputHelper output) : base(driver, output)
         {
         }
 
+        // 2. MÉTODO DE BÚSQUEDA CON ESPERAS SEGURAS
         public void SearchDevices(string nombre, string color)
         {
-            // Esperar y borrar nombre
-            WaitForBeingClickable(inputFiltroNombre);
-            _driver.FindElement(inputFiltroNombre).Clear();
-            if (!string.IsNullOrEmpty(nombre))
+            // 1. Espera de cortesía para que la página se asiente
+            Thread.Sleep(1500);
+            var js = (IJavaScriptExecutor)_driver;
+
+            try
             {
-                _driver.FindElement(inputFiltroNombre).SendKeys(nombre);
+                // 2. Encontrar los inputs de la sección de filtros
+                var inputs = _driver.FindElements(By.CssSelector(".card-body .form-control"));
+
+                if (inputs.Count >= 2)
+                {
+                    // Forzamos valor y disparamos 'input' y 'change' para despertar a Blazor
+                    if (!string.IsNullOrEmpty(nombre))
+                    {
+                        js.ExecuteScript(
+                            "arguments[0].value = arguments[1]; " +
+                            "arguments[0].dispatchEvent(new Event('input', { bubbles: true })); " +
+                            "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
+                            inputs[0], nombre);
+                    }
+
+                    if (!string.IsNullOrEmpty(color))
+                    {
+                        js.ExecuteScript(
+                            "arguments[0].value = arguments[1]; " +
+                            "arguments[0].dispatchEvent(new Event('input', { bubbles: true })); " +
+                            "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
+                            inputs[1], color);
+                    }
+                }
+
+                // 3. Dejar que Blazor procese los cambios en su modelo C#
+                Thread.Sleep(500);
+
+                // 4. Clonamos el botón de Buscar apuntando directo a la tarjeta gris (.bg-light)
+                // Así evitamos que Selenium se confunda con los botones de "Añadir al Carrito"
+                var botonBuscar = _driver.FindElement(By.CssSelector(".bg-light button"));
+
+                // 5. Hacemos el click fulminante por JavaScript
+                js.ExecuteScript("arguments[0].click();", botonBuscar);
+            }
+            catch (Exception ex)
+            {
+                _output.WriteLine($"[ERROR] Error en la búsqueda: {ex.Message}");
+                throw;
             }
 
-            // Esperar y borrar color
-            _driver.FindElement(inputFiltroColor).Clear();
-            if (!string.IsNullOrEmpty(color))
-            {
-                _driver.FindElement(inputFiltroColor).SendKeys(color);
-            }
-
-
-            _driver.FindElement(buttonSearch).Click();
-
-
-            Thread.Sleep(1000);
+            // 6. Pausa para ver cómo desaparecen los móviles tras el filtro
+            Thread.Sleep(2000);
         }
 
 

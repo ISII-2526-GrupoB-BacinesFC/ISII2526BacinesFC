@@ -11,13 +11,11 @@ namespace AppForSEII2526.UIT.UC_Purchase
 {
     public class UC_Purchases_UIT : UC_UIT
     {
-        private SelectDevices_PO _selectPO;
-
+        private SelectDevices_PO _selectPO; //  Nombre correcto
 
         public UC_Purchases_UIT(ITestOutputHelper output) : base(output)
         {
-            _selectPO = new SelectDevices_PO(_driver, _output);
-
+            _selectPO = new SelectDevices_PO(_driver, _output); //  Nombre correcto
         }
 
         private void InitialStepsForCompra()
@@ -219,17 +217,17 @@ namespace AppForSEII2526.UIT.UC_Purchase
 
 
             _selectPO.SearchDevices("iPhone", "");
-            _selectPO.AddDeviceToCart("iPhone 14 Pro 512GB");
+            _selectPO.AddDeviceToCart("iPhone 15 Pro Max 256GB");
             _selectPO.ProceedToCheckout();
 
-            string mensajeEsperado = "Atención: Ocurrió un error al procesar la compra: Bad Request Status: 400 Response:";
+            string mensajeEsperado = "Atención: ERROR DE VALIDACIÓN (400): Revisa que no haya campos vacíos en los ítems.";
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
 
             //  ACT 
             crearCompraPO.EscribirNombre("x");
             crearCompraPO.EscribirApellidos("x");
             crearCompraPO.EscribirDireccion("x");
-            crearCompraPO.SeleccionarPago("Efectivo");
+            crearCompraPO.SeleccionarPago("Cash");
 
             crearCompraPO.ClickConfirmar();
 
@@ -245,7 +243,7 @@ namespace AppForSEII2526.UIT.UC_Purchase
             InitialStepsForCompra();
 
 
-            string dispositivo = "iPhone 14 Pro 256";
+            string dispositivo = "iPhone 15 Pro Max 256GB";
             _selectPO.SearchDevices("iPhone", "");
 
             for (int i = 0; i < 15; i++)
@@ -257,13 +255,13 @@ namespace AppForSEII2526.UIT.UC_Purchase
 
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
 
-            string mensajeEsperado = "Atención: Ocurrió un error al procesar la compra: Bad Request Status: 400 Response:";
+            string mensajeEsperado = "Atención: ERROR DE VALIDACIÓN (400): Revisa que no haya campos vacíos en los ítems.";
 
             // ACT 
-            crearCompraPO.EscribirNombre("David");
-            crearCompraPO.EscribirApellidos("Gómez Fernández");
-            crearCompraPO.EscribirDireccion("Paseo de la Castellana 100, Madrid");
-            crearCompraPO.SeleccionarPago("Efectivo");
+            crearCompraPO.EscribirNombre("elena@uclm.es");
+            crearCompraPO.EscribirApellidos("Navarro Martínez");
+            crearCompraPO.EscribirDireccion("Avda. España, Albacete");
+            crearCompraPO.SeleccionarPago("Cash");
 
             crearCompraPO.ClickConfirmar();
 
@@ -392,51 +390,66 @@ namespace AppForSEII2526.UIT.UC_Purchase
         [Trait("LevelTesting", "Funcional Testing")]
         public void CU1_1_Flujo_Basico()
         {
-
-
-            //  ARRANGE 
+            // ==========================================
+            // 1. ARRANGE (Configuración con tu HTML real)
+            // ==========================================
             InitialStepsForCompra();
-            string movil1 = "Oppo";
-            string movil2 = "Iphone";
 
-            string nombreEsperado = "Oppo Find X5";
-            string marcaEsperada = "Oppo";
-            string colorEsperado = "Azul";
-            string precioEsperado = "799,99";
+            // Nombres completos para poder hacer click en las TARJETAS del catálogo
+            string cardMovil1 = "Galaxy S24 Ultra 512GB";
+            string cardMovil2 = "iPhone 15 Pro Max 256GB";
+
+            // Nombres EXACTOS recortados que pinta tu web en el RECIBO (Ver captura)
+            string nombreRecibo1 = "Galaxy S24 Ultra";
+            string marcaEsperada = "Samsung";
+            string colorEsperado = "Negro";
+            string precioEsperado = "1.399,99"; // Añadido el punto de los miles
             string cantidadEsperada = "1";
-            string descripcionEsperada = "Compra Web";
+            string descripcionEsperada = "Compra realizada desde la web";
 
-            string nombreEsperado2 = "iPhone 14 Pro";
+            string nombreRecibo2 = "iPhone 15 Pro Max";
             string marcaEsperada2 = "Apple";
-            string colorEsperado2 = "Negro";
-            string precioEsperado2 = "1.199,99";
+            string colorEsperado2 = "Blanco";
+            string precioEsperado2 = "1.499,00"; // Añadido el punto de los miles
             string cantidadEsperada2 = "1";
-            string descripcionEsperada2 = "Compra Web";
+            string descripcionEsperada2 = "Compra realizada desde la web";
 
-            _selectPO.SearchDevices("Oppo", "");
-            _selectPO.AddDeviceToCart(movil1);
+            // Datos obligatorios del comprador (Mantenemos tu regla del Email)
+            string nombreUser = "elena@uclm.es";
+            string apellidosUser = "Navarro Martínez";
+            string direccionUser = "Avda. España 2, Albacete";
+
+            // ==========================================
+            // 2. ACT (Acciones automatizadas)
+            // ==========================================
+
+            // Añadimos primer dispositivo
+            _selectPO.SearchDevices("Galaxy", "");
+            _selectPO.AddDeviceToCart(cardMovil1);
+
+            // Añadimos segundo dispositivo
             _selectPO.SearchDevices("iPhone", "");
-            _selectPO.AddDeviceToCart("iPhone");
+            _selectPO.AddDeviceToCart(cardMovil2);
             _selectPO.ProceedToCheckout();
 
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
             var _detallePO = new DetailPurchase_PO(_driver, _output);
 
-            string nombreUser = "Juan";
-            string apellidosUser = "Pérez García";
-            string direccionUser = "Calle Mayor 123";
-
-            //  ACT 
+            // Rellenamos el formulario de envío
             crearCompraPO.EscribirNombre(nombreUser);
             crearCompraPO.EscribirApellidos(apellidosUser);
             crearCompraPO.EscribirDireccion(direccionUser);
-            crearCompraPO.SeleccionarPago("Efectivo");
+            crearCompraPO.SeleccionarPago("Cash"); // Mantenemos "Cash" para que pinche tu combo
 
             crearCompraPO.ClickConfirmar();
 
-            string precioTotalEsperado = "1.999,98 €";
+            // ==========================================
+            // 3. ASSERT (Verificaciones del Recibo)
+            // ==========================================
+            string precioTotalEsperado = "2.898,99 €";
             string fechaEsperada = DateTime.Now.ToString("dd/MM/yyyy");
 
+            // Verificar los datos del comprador en la cabecera superior
             Assert.True(_detallePO.VerificarDetallesCabecera(
                 $"{nombreUser} {apellidosUser}",
                 direccionUser,
@@ -444,17 +457,17 @@ namespace AppForSEII2526.UIT.UC_Purchase
                 precioTotalEsperado),
                 "Los datos de la cabecera del detalle (Nombre, Dirección, Pago o Precio) son incorrectos.");
 
+            // Verificar la lista de productos usando el texto exacto de la tabla de la foto
             List<string[]> dispositivosEsperados = new List<string[]>
-            {
-                new string[] { nombreEsperado, marcaEsperada, colorEsperado, precioEsperado,cantidadEsperada,descripcionEsperada },
-                new string[] { nombreEsperado2, marcaEsperada2, colorEsperado2, precioEsperado2,cantidadEsperada2,descripcionEsperada2 }
-            };
+    {
+        new string[] { nombreRecibo1, marcaEsperada, colorEsperado, precioEsperado, cantidadEsperada, descripcionEsperada },
+        new string[] { nombreRecibo2, marcaEsperada2, colorEsperado2, precioEsperado2, cantidadEsperada2, descripcionEsperada2 }
+    };
 
             Assert.True(
                 _detallePO.CheckListOfDispositivos(dispositivosEsperados),
-                $"El dispositivo '{nombreEsperado}' no aparece en la tabla de detalles."
+                $"Los dispositivos comprados no coinciden o no aparecen en la tabla de detalles del recibo."
             );
-
         }
 
         [Fact]

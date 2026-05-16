@@ -1,28 +1,29 @@
-﻿using System;
+﻿using AppForSEII2526.UIT.Shared;
+using OpenQA.Selenium;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
 
 namespace AppForSEII2526.UIT.UC_Purchase
 {
     public class DetailPurchase_PO : PageObject
     {
-
         private By labelNameSurname = By.Id("NameSurname");
         private By labelAddress = By.Id("DeliveryAddress");
         private By fechaCompra = By.Id("FechaCompra");
         private By labelTotalPrice = By.Id("TotalPrice");
-        private By tableMovies = By.Id("RentedMovies");
 
-
+        // CORREGIDO: Buscamos directamente por la etiqueta HTML 'table' sin depender de IDs viejos
+        private By tableMovies = By.TagName("table");
 
         public DetailPurchase_PO(IWebDriver driver, ITestOutputHelper output) : base(driver, output)
         {
         }
-
-
 
         public bool VerificarDetallesCabecera(string nombreCompleto, string direccion, string fecha, string precioTotal)
         {
@@ -36,7 +37,7 @@ namespace AppForSEII2526.UIT.UC_Purchase
                 string actualFecha = _driver.FindElement(fechaCompra).Text;
                 string actualPrice = _driver.FindElement(labelTotalPrice).Text;
 
-                _output.WriteLine($"Detalle encontrado -> Nombre: {actualName}, Direccion: {actualAddress},Precio: {actualPrice}, Fecha: {actualFecha}");
+                _output.WriteLine($"Detalle encontrado -> Nombre: {actualName}, Direccion: {actualAddress}, Precio: {actualPrice}, Fecha: {actualFecha}");
 
                 // Validamos
                 bool checkName = actualName.Contains(nombreCompleto);
@@ -58,11 +59,16 @@ namespace AppForSEII2526.UIT.UC_Purchase
 
         public bool CheckListOfDispositivos(List<string[]> expectedData)
         {
+            // 1. Esperamos a que la tabla física aparezca en pantalla
             WaitForBeingVisible(tableMovies);
+
+            // Un pequeño respiro de seguridad para que Blazor termine de renderizar las celdas internas
+            Thread.Sleep(500);
 
             CultureInfo culturaES = new CultureInfo("es-ES");
 
-            var filas = _driver.FindElements(By.CssSelector("#RentedMovies tbody tr"));
+            // CORREGIDO: Buscamos las filas de la tabla de forma genérica
+            var filas = _driver.FindElements(By.CssSelector("table tbody tr"));
 
             if (filas.Count == 0 && expectedData.Count > 0) return false;
 
@@ -81,15 +87,20 @@ namespace AppForSEII2526.UIT.UC_Purchase
                 {
                     var columnas = fila.FindElements(By.TagName("td"));
 
+                    // Si la fila no tiene columnas suficientes, saltamos
+                    if (columnas.Count < 6) continue;
+
                     string actualNombre = columnas[0].Text.Trim();
                     string actualMarca = columnas[1].Text.Trim();
                     string actualColor = columnas[2].Text.Trim();
+
+                    // Limpiamos el símbolo del euro para comparar solo el número ("1.399,99")
                     string actualPrecio = columnas[3].Text.Replace("€", "").Trim();
                     string actualCantidad = columnas[4].Text.Trim();
                     string actualDescripcion = columnas[5].Text.Trim();
 
                     _output.WriteLine($"DATOS EN LA WEB: {actualNombre} | {actualMarca} | {actualColor} | {actualPrecio} | {actualCantidad} | {actualDescripcion}");
-                    _output.WriteLine($"DATOS ESPERADOS: {expectedNombre} | {expectedMarca} | {expectedColor} | {expectedPrecio}| {expectedCantidad} | {expectedDescripcion}");
+                    _output.WriteLine($"DATOS ESPERADOS: {expectedNombre} | {expectedMarca} | {expectedColor} | {expectedPrecio} | {actualCantidad} | {expectedDescripcion}");
 
                     if (actualNombre.Contains(expectedNombre, StringComparison.OrdinalIgnoreCase) &&
                         actualMarca.Contains(expectedMarca, StringComparison.OrdinalIgnoreCase) &&
@@ -105,15 +116,12 @@ namespace AppForSEII2526.UIT.UC_Purchase
 
                 if (!found)
                 {
-                    _output.WriteLine($"No se encontró FILA para: {expectedNombre} | {expectedMarca} | {expectedColor} | {expectedPrecio}| {expectedCantidad} | {expectedDescripcion}");
+                    _output.WriteLine($"No se encontró FILA para: {expectedNombre} | {expectedMarca} | {expectedColor} | {expectedPrecio} | {expectedCantidad} | {expectedDescripcion}");
                     return false;
                 }
             }
 
             return true;
         }
-
-
     }
-
 }
