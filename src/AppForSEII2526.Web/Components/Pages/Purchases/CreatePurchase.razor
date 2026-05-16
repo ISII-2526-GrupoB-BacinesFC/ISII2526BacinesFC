@@ -132,7 +132,7 @@
 
     protected override void OnInitialized()
     {
-        // Si el carrito está vacio se redirige al paso anterior
+        // Si el carrito está vacío se redirige al paso anterior
         if (CompraState.Purchase.PurchaseItems == null || !CompraState.Purchase.PurchaseItems.Any())
         {
             Navigation.NavigateTo("/Purchases/SelectDevices");
@@ -143,7 +143,9 @@
     {
         mensajeError = "";
 
-        // 1. Validaciones de interfaz
+        // ==========================================================
+        // 1. CONTROL DE CAMPOS VACÍOS (Frontend)
+        // ==========================================================
         if (string.IsNullOrWhiteSpace(CompraState.Purchase.CustomerUserName))
         {
             mensajeError = "Por favor, introduce tu Nombre.";
@@ -160,42 +162,89 @@
             return;
         }
 
+        // ==========================================================
+        // 2. REGLA OBLIGATORIA: El nombre tiene que tener formato Email
+        // ==========================================================
+        if (!CompraState.Purchase.CustomerUserName.Contains("@"))
+        {
+            mensajeError = "El Nombre de registro debe ser un email válido.";
+            return;
+        }
+
+        // ==========================================================
+        // 3. CONTROL DE LONGITUDES MÁXIMAS (Frontend)
+        // ==========================================================
+        if (CompraState.Purchase.CustomerUserName.Length > 50)
+        {
+            mensajeError = "El Nombre es demasiado largo (máximo 50 caracteres).";
+            return;
+        }
+        if (CompraState.Purchase.CustomerNameSurname.Length > 70)
+        {
+            mensajeError = "Los Apellidos son demasiado largos (máximo 70 caracteres).";
+            return;
+        }
+        if (CompraState.Purchase.DeliveryAddress.Length > 100)
+        {
+            mensajeError = "La Dirección es demasiado larga (máximo 100 caracteres).";
+            return;
+        }
+
+        // ==========================================================
+        // 4. ENVÍO DE DATOS Y CONTROL DE STOCK (API)
+        // ==========================================================
         enviando = true;
 
         try
         {
-            // --- BLOQUE DE AJUSTE FINAL ---
-
-            // Forzamos el método de pago al valor 0 (CreditCard) para descartar errores de Enum
+            // Forzamos el método de pago (0 = CreditCard, Cash, etc.)
             CompraState.Purchase.PaymentMethod = 0;
 
-            // Recalculamos la cantidad total de la compra sumando los ítems
+            // Recalculamos cantidades y asignamos fecha de proceso
             CompraState.Purchase.Quantity = CompraState.Purchase.PurchaseItems.Sum(i => i.Quantity);
-
-            // Importante: Si la API requiere fecha, se la pasamos aquí
             CompraState.Purchase.DateTime = DateTime.Now;
 
-            // --- LLAMADA A LA API ---
+            // Lanzamos la petición al servidor
             var compraRealizada = await ApiClient.CrearCompraAsync(CompraState.Purchase);
 
-            // Si llegamos aquí, la compra ha funcionado. Vamos a detalles.
+            // Si el servidor da el OK, avanzamos al recibo final
             Navigation.NavigateTo($"/Purchases/DetailPurchase/{compraRealizada.Id}");
         }
-        catch (ApiException ex)
+        catch (AppForSEII2526.Web.API.ApiException ex)
         {
-            // El ex.Response es la clave. Si la API da un 400, aquí pondrá qué campo falla.
-            mensajeError = $"ERROR DE VALIDACIÓN ({ex.StatusCode}): " +
-                          (string.IsNullOrEmpty(ex.Response) ? "Revisa que no haya campos vacíos en los ítems." : ex.Response);
+            // Gracias a la traza larga sabemos que la excepción es de tipo ApiException<ValidationProblemDetails>
+            // Usamos el patrón de coincidencia nativo de C# para abrir el objeto sin romper nada
+            if (ex is AppForSEII2526.Web.API.ApiException<AppForSEII2526.Web.API.ValidationProblemDetails> validationEx)
+            {
+                if (validationEx.Result?.Errors != null)
+                {
+                    // Recorremos el diccionario de errores del ModelState que envió tu API
+                    foreach (var error in validationEx.Result.Errors)
+                    {
+                        foreach (var mensaje in error.Value)
+                        {
+                            string msgTexto = mensaje.ToString();
 
-            Console.WriteLine("DEBUG API ERROR: " + ex.Response);
-        }
-        catch (Exception ex)
-        {
-            mensajeError = "ERROR INESPERADO: " + ex.Message;
-        }
-        finally
-        {
-            enviando = false;
+                            // 1. CAPTURAMOS EL ERROR DE USUARIO NO EXISTE (CU1_10)
+                            if (msgTexto.Contains("Usuario no registrado"))
+                            {
+                                mensajeError = "El usuario no existe.";
+                                return;
+                            }
+
+                            // 2. CAPTURAMOS EL ERROR DE DISPOSITIVO SIN STOCK (CU1_11)
+                            if (msgTexto.Contains("No hay suficiente stock") || msgTexto.Contains("DispositivoNoDisponible"))
+                            {
+                                mensajeError = "No hay stock suficiente para el dispositivo seleccionado.";
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Fallback de seguridad: Si el error 400 es por otra cosa o es un error 500, muestra el código numérico
+            mensajeError = $"Atención: Ocurrió un error al procesar la compra (Status: {ex.StatusCode}).";
         }
     }
 }

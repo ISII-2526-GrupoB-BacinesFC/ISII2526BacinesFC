@@ -56,9 +56,11 @@ namespace AppForSEII2526.UIT.UC_Purchase
                     string actualNombre = item.FindElement(By.CssSelector("h6.my-0")).Text;
                     string actualDetalle = item.FindElement(By.CssSelector("small.text-muted")).Text;
                     string actualPrecio = item.FindElement(By.CssSelector("span.text-muted")).Text;
-                    _output.WriteLine($"Datos Esperados: {actualNombre} | {actualDetalle} | {actualPrecio}");
-                    _output.WriteLine($"Datos en la web: {expectedNombre} | {expectedColor} | {expectedPrecio}");
 
+                    _output.WriteLine($"[WEB] leído: '{actualNombre}' | '{actualDetalle}' | '{actualPrecio}'");
+                    _output.WriteLine($"[TEST] esperado: '{expectedNombre}' | '{expectedColor}' | '{expectedPrecio}'");
+
+                    // Comparación limpia y profesional usando Contains estándar
                     if (actualNombre.Contains(expectedNombre, StringComparison.OrdinalIgnoreCase) &&
                         actualDetalle.Contains(expectedColor, StringComparison.OrdinalIgnoreCase) &&
                         actualPrecio.Contains(expectedPrecio))
@@ -68,11 +70,7 @@ namespace AppForSEII2526.UIT.UC_Purchase
                     }
                 }
 
-                if (!found)
-                {
-
-                    return false;
-                }
+                if (!found) return false;
             }
 
             return true;
