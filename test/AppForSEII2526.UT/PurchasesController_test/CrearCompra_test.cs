@@ -120,7 +120,7 @@ namespace AppForSEII2526.UT.PurchasesController_test
                  new object[] { compraUsuarioNoExiste, "Error! Usuario no registrado" },
                  new object[] { compraDispositivoNoExiste, "Error! No se encontró el dispositivo" },
                  new object[] { compraDispositivoSinStock, "Error! No hay suficiente stock del dispositivo" },
-                 new object[] { compraExamen, "Error! Las tecnologias de estas marcas ya no estan disponibles, siguiendo recomendaciones de las autoridades competentes en materia de seguridad" },
+                 new object[] { compraExamen, "Error! Las tecnologias de estas marcas ya no se comercializan en Europa" },
             };
 
             return allTests;

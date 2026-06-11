@@ -75,34 +75,36 @@ namespace AppForSEII2526.UT.DevicesController_test
             var testCases = new List<object[]>
             {
                 // 1. Sin filtros: deben aparecer todos los dispositivos con CantidadParaCompra > 0 (18)
-                new object[] { null, null, 18 },
+                new object[] { null, null, null, 18 },
+
+                new object[] { null, null, null, 18 },
 
                 // 2. Filtro por nombre “iPhone”
-                new object[] { "iPhone", null, 5 },
+                new object[] { "iPhone", null, null, 5 },
 
                 // 3. Filtro por nombre “Galaxy”
-                new object[] { "Galaxy", null, 4 },
+                new object[] { "Galaxy", null, null, 4 },
 
                 // 4. Filtro por nombre “Pixel”
-                new object[] { "Pixel", null, 2 },
+                new object[] { "Pixel", null, null, 2 },
 
                 // 5. Filtro por color “Negro”
-                new object[] { null, "Negro", 6 },
+                new object[] { null, "Negro", null, 6 },
 
                 // 6. Filtro por nombre “Xiaomi”
-                new object[] { "Xiaomi", null, 2 },
+                new object[] { "Xiaomi", null, null, 2 },
 
                 // 7. Filtro por nombre “Realme”
-                new object[] { "Realme", null, 2 },
+                new object[] { "Realme", null, null, 2 },
 
                 // 8. Filtro por nombre “Huawei”
-                new object[] { "Huawei", null, 1 },
+                new object[] { "Huawei", null, null, 1 },
 
                 // 9. Filtro por nombre “OnePlus”
-                new object[] { "OnePlus", null, 1 },
+                new object[] { "OnePlus", null, null, 1 },
 
                 // 10. Filtro inexistente
-                new object[] { "Nokia", null, 0 }
+                new object[] { "Nokia", null, null, 0 }
             };
 
             return testCases;
@@ -114,13 +116,14 @@ namespace AppForSEII2526.UT.DevicesController_test
         public async Task GetDispositivosParaComprar_Filtros_Test(
             string? filtroNombre,
             string? filtroColor,
+            float? filtroPrecio,
             int cantidadEsperada)
         {
             // Arrange
             var controller = new DevicesController(_context, null);
 
             // Act
-            var result = await controller.GetDispositivosParaComprar(filtroNombre, filtroColor);
+            var result = await controller.GetDispositivosParaComprar(filtroNombre, filtroColor, filtroPrecio);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);

@@ -1,27 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using OpenQA.Selenium.Interactions;
-using SeleniumExtras.WaitHelpers;
 using Xunit.Abstractions;
 
 namespace AppForSEII2526.UIT.Shared
 {
     public class PageObject
     {
-
         protected IWebDriver _driver;
-        //this may be used whenever some result should be printed in Explorador de Pruebas
         protected readonly ITestOutputHelper _output;
 
         private By _modalTitle = By.ClassName("modal-title");
         private By _modalBody = By.ClassName("modal-body");
         private By _okModalDialog = By.Id("Button_DialogOK");
-
 
         protected PageObject(IWebDriver driver, ITestOutputHelper output)
         {
@@ -29,10 +23,8 @@ namespace AppForSEII2526.UIT.Shared
             this._output = output;
         }
 
-
         public void InputDateInDatePicker(By datepicker, DateTime date)
         {
-            //first we select the datepicker
             IWebElement webElement = _driver.FindElement(datepicker);
 
             var action = new Actions(_driver);
@@ -50,9 +42,7 @@ namespace AppForSEII2526.UIT.Shared
             action.KeyDown(Keys.Right).Perform();
             action.KeyDown(Keys.Right).Perform();
             action.SendKeys(date.ToString("yyyy")).Perform();
-
         }
-
 
         public bool CheckBodyTable(List<string[]> expectedRows, By IdTable)
         {
@@ -64,8 +54,7 @@ namespace AppForSEII2526.UIT.Shared
             IList<IWebElement> actualrows = _driver
                 .FindElement(IdTable)
                 .FindElement(By.TagName("tbody"))
-                //.FindElements(By.XPath(".//tr"))
-                .FindElements(By.TagName("tr"))//we obtain just the rows of the body of the table
+                .FindElements(By.TagName("tr"))
                 .ToList();
 
             if (actualrows.Count != expectedRows.Count)
@@ -79,24 +68,22 @@ namespace AppForSEII2526.UIT.Shared
                 expectedRow = expectedRows[i][0];
                 for (j = 1; j < expectedRows[i].Count(); j++)
                     expectedRow = expectedRow + " " + expectedRows[i][j];
+
                 actualRow = actualrows
-                    .Select(m => m.Text) //we return the text of the row
+                    .Select(m => m.Text)
                     .ToList()[i];
 
                 if (!actualRow.StartsWith(expectedRow))
                 {
                     _output.WriteLine($"Error: \n \t expected row:{expectedRow} \n \t actual row:{actualRow}");
                     result = false;
-
                 }
             }
             return result;
-
         }
 
         public bool CheckModalBodyText(string expectedBody, By modal)
         {
-            //waiting for the message error to be shown
             WaitForBeingVisible(modal);
             var actualBody = _driver.FindElement(_modalBody).Text;
             return actualBody.Contains(expectedBody);
@@ -104,7 +91,6 @@ namespace AppForSEII2526.UIT.Shared
 
         public bool CheckModalTitleText(string expectedTitle, By modal)
         {
-            //waiting for the message error to be shown
             WaitForBeingVisible(modal);
             var actualTitle = _driver.FindElement(_modalTitle).Text;
             return actualTitle.Contains(expectedTitle);
@@ -112,67 +98,62 @@ namespace AppForSEII2526.UIT.Shared
 
         public void PressOkModalDialog()
         {
-            //waiting for the message error to be shown
             WaitForBeingVisible(_okModalDialog);
             _driver.FindElement(_okModalDialog).Click();
         }
 
-
+        // --- MÉTODOS ACTUALIZADOS PARA SELENIUM 4 ---
 
         public void WaitForBeingClickable(By IdElement)
         {
-            //used whenever the webelement needs a delay for being clickable
-            var wait = new WebDriverWait(_driver, new TimeSpan(0, 0, 30));
-            wait.Until(ExpectedConditions.ElementToBeClickable(IdElement));
-
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30));
+            // Verificamos que exista, sea visible y esté habilitado para hacer clic
+            wait.Until(driver =>
+            {
+                var element = driver.FindElement(IdElement);
+                return element != null && element.Displayed && element.Enabled;
+            });
         }
 
         public void WaitForBeingVisible(By IdElement)
         {
-            //used whenever the webelement needs a delay for being clickable
-            var wait = new WebDriverWait(_driver, new TimeSpan(0, 0, 30));
-            wait.Until(ExpectedConditions.ElementIsVisible(IdElement));
-
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30));
+            // Verificamos únicamente que sea visible en pantalla
+            wait.Until(driver => driver.FindElement(IdElement).Displayed);
         }
 
-        // Método para hacer clic en añadir al carrito usando el nombre del móvil
         public void AgregarDispositivoAlCarrito(string nombreMovil)
         {
-            // Reemplazamos los espacios tal y como hicimos en el HTML
             string idBotón = $"btn-add-{nombreMovil.Replace(" ", "-")}";
             By locator = By.Id(idBotón);
 
-            // Forzamos a Selenium a esperar a que el botón aparezca y se pueda clicar
             WaitForBeingClickable(locator);
             _driver.FindElement(locator).Click();
         }
 
-        // Método para hacer clic en Tramitar Pedido
         public void TramitarPedido()
         {
             By locator = By.Id("btn-tramitar-pedido");
 
-            // Esperamos a que el botón sea cliqueable (ya que aparece solo si hay artículos)
             WaitForBeingClickable(locator);
             _driver.FindElement(locator).Click();
         }
 
         public void WaitForBeingVisibleIgnoringExeptionTypes(By IdElement)
         {
-            //used whenever the webelement needs a delay for being clickable
-            var wait = new WebDriverWait(_driver, new TimeSpan(0, 10, 0));
-
+            var wait = new WebDriverWait(_driver, TimeSpan.FromMinutes(10));
 
             wait.IgnoreExceptionTypes(typeof(NoSuchElementException),
                 typeof(WebDriverTimeoutException),
                 typeof(UnhandledAlertException),
                 typeof(ElementClickInterceptedException));
+
             bool notFoundButton = true;
             while (notFoundButton)
             {
                 try
                 {
-                    wait.Until(ExpectedConditions.ElementIsVisible(IdElement));
+                    wait.Until(driver => driver.FindElement(IdElement).Displayed);
                     notFoundButton = false;
                 }
                 catch (ElementClickInterceptedException ex)
@@ -182,18 +163,13 @@ namespace AppForSEII2526.UIT.Shared
             }
         }
 
-
         public void WaitForTextToBePresentInElement(By IdElement, string expectedText)
         {
-            //used whenever the webelement needs a delay for being clickable
-            var wait = new WebDriverWait(_driver, new TimeSpan(0, 0, 30));
-            IWebElement element = _driver.FindElement(IdElement);
-            wait.Until(ExpectedConditions.TextToBePresentInElement(element, expectedText));
-
+            var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(30));
+            // Verificamos que el texto del elemento contenga el texto esperado
+            wait.Until(driver => driver.FindElement(IdElement).Text.Contains(expectedText));
         }
 
-
-        //it wait for "seconds" till all the webelements of the page are loaded
         public void ImplicitWait(int seconds) =>
             _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(seconds);
     }
