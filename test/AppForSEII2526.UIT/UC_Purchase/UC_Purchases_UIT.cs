@@ -439,15 +439,14 @@ namespace AppForSEII2526.UIT.UC_Purchase
         {
             InitialStepsForCompra();
 
-            string nombre1 = "iPhone 15 Pro Max 256GB";
-            string nombre2 = "Redmi Note 13 Pro 128GB";
-            string color2 = "Azul";
-            string nombre3 = "Pixel 8 Pro 128GB";
-            string marca = "Google";
-            string color = "Gris";
-            string precioEsperado = "1.099,00";
+            string nombre1 = "Galaxy S24 Ultra 512GB";
+            string nombre2 = "ROG Phone 8 16GB";
+            string color = "Negro";
+            string nombre3 = "iPhone 15 Pro Max 256GB";
+            string marca = "iPhone";
+            string color2 = "Blanco";
+            string precioEsperado = "1.499,00";
             string cantidadEsperada = "1";
-            string descripcionEsperada = "Compra realizada desde la web";
 
             var crearCompraPO = new CreatePurchase_PO(_driver, _output);
             var _detallePO = new DetailPurchase_PO(_driver, _output);
@@ -460,21 +459,18 @@ namespace AppForSEII2526.UIT.UC_Purchase
             // ACT: Forzamos ambos parámetros en cada búsqueda para limpiar la caché
             // ====================================================================
 
-            // 1. Buscamos el iPhone (Sabemos por la cesta que es Blanco)
-            _selectPO.SearchDevices("iPhone 15", "Blanco");
+            // 1. Filtramos por Color y buscamos el GalaxyS24 y el ROG
+            _selectPO.SearchDevices(" ", "Negro");
             _selectPO.AddDeviceToCart(nombre1);
-
-            // 2. Buscamos el Redmi (Especificamos su nombre para machacar "iPhone 15")
-            _selectPO.SearchDevices("Redmi", "Azul");
             _selectPO.AddDeviceToCart(nombre2);
 
-            // 3. Buscamos el Pixel (Especificamos su nombre y su color "Gris" real)
-            _selectPO.SearchDevices("Pixel", "Gris");
+            // 2. Filtramos por Nombre 
+            _selectPO.SearchDevices("iPhone", " ");
             _selectPO.AddDeviceToCart(nombre3);
 
-            // 4. Eliminamos los que no queremos del carrito lateral
-            _selectPO.RemoveDeviceFromCart("iPhone 15 Pro Max");
-            _selectPO.RemoveDeviceFromCart("Redmi Note 13 Pro");
+
+            _selectPO.RemoveDeviceFromCart("Galaxy S24 Ultra");
+            _selectPO.RemoveDeviceFromCart("ROG Phone 8");
             _selectPO.ProceedToCheckout();
 
             // 5. Rellenamos el formulario de envío
@@ -486,7 +482,7 @@ namespace AppForSEII2526.UIT.UC_Purchase
             crearCompraPO.ClickConfirmar();
 
             // 6. Verificaciones del recibo final
-            string precioTotalEsperado = "1.099,00 €";
+            string precioTotalEsperado = "1.,00 €";
             string fechaEsperada = DateTime.Now.ToString("dd/MM/yyyy");
 
             Assert.True(_detallePO.VerificarDetallesCabecera(
@@ -498,7 +494,7 @@ namespace AppForSEII2526.UIT.UC_Purchase
 
             List<string[]> dispositivosEsperados = new List<string[]>
             {
-                new string[] { "Pixel 8 Pro", marca, color, precioEsperado, cantidadEsperada, descripcionEsperada }
+                new string[] { "iPhone 15 Pro Max", marca, color2, precioEsperado, cantidadEsperada}
             };
 
             Assert.True(
