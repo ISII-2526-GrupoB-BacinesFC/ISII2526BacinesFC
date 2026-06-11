@@ -86,7 +86,7 @@ var app = builder.Build();
 
 
 
-//Map Identity routes
+// f Map Identity routes
 //app.MapIdentityApi<IdentityUser>();
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
