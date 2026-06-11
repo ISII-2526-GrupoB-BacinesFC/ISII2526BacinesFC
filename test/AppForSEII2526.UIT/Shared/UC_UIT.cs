@@ -10,7 +10,7 @@ namespace AppForSEII2526.UIT.Shared
     {
         // Cambia a true si quieres que el navegador no se abra físicamente (segundo plano)
         private readonly bool _pipeline = false;
-        private readonly string _browser = "Edge";
+        private readonly string _browser = "Chrome";
 
         protected IWebDriver _driver;
         protected readonly ITestOutputHelper _output;

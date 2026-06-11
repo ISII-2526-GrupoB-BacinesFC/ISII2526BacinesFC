@@ -136,7 +136,7 @@ namespace AppForSEII2526.API.Controllers
                 if (itemDTO.Brand.Contains("Xiaomi") || itemDTO.Brand.Contains("Huawei"))
                 {
                     ModelState.AddModelError("TecnologiaNoDisponible",
-                        $"Error! Las tecnologias de estas marcas ya no estan disponibles, siguiendo recomendaciones de las autoridades competentes en materia de seguridad");
+                        $"Error! Las tecnologias de estas marcas ya no se comercializan en Europa");
                     return BadRequest(new ValidationProblemDetails(ModelState));
                 }
 
